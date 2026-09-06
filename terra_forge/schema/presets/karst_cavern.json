@@ -1,0 +1,144 @@
+{
+  "name": "Karst_Tower_Cavern_Diorama",
+  "theme": "karst_cavern",
+  "seed": 5566,
+  "diorama": {
+    "width": 160.0,
+    "depth": 160.0,
+    "z_base": -16.0,
+    "resolution": 256
+  },
+  "peaks": [
+    {
+      "name": "Karst_Tower_Alpha",
+      "position": [-25.0, 30.0],
+      "height": 35.0,
+      "radius": 16.0,
+      "shape": "horn",
+      "ridge_angle_deg": 0.0
+    },
+    {
+      "name": "Karst_Tower_Beta",
+      "position": [18.0, 42.0],
+      "height": 32.0,
+      "radius": 15.0,
+      "shape": "horn",
+      "ridge_angle_deg": 0.0
+    },
+    {
+      "name": "Karst_Pinnacle_South",
+      "position": [-20.0, -30.0],
+      "height": 24.0,
+      "radius": 14.0,
+      "shape": "horn",
+      "ridge_angle_deg": 0.0
+    }
+  ],
+  "erosion": {
+    "enabled": true,
+    "droplet_count": 32000,
+    "droplet_inertia": 0.04,
+    "sediment_capacity_factor": 4.2,
+    "min_sediment_capacity": 0.01,
+    "erode_speed": 0.38,
+    "deposit_speed": 0.32,
+    "evaporate_speed": 0.012,
+    "gravity": 4.2,
+    "max_droplet_steps": 64,
+    "thermal_iterations": 14,
+    "talus_angle_deg": 42.0,
+    "scree_talus_deposition": 0.40
+  },
+  "hydrology": {
+    "lake_center": [-10.0, -5.0],
+    "lake_radius": 22.0,
+    "lake_level": 4.5,
+    "lake_depth": 13.0,
+    "sea_level": 0.0,
+    "river_enabled": true,
+    "river_carve_depth": 2.6,
+    "river_meander_amplitude": 1.1
+  },
+  "cavern": {
+    "enabled": true,
+    "center": [-22.0, 26.0, -7.0],
+    "radius_x": 18.0,
+    "radius_y": 15.0,
+    "height": 8.0,
+    "entrance_pos": [0.0, 12.0, 1.5],
+    "entrance_radius": 5.0,
+    "min_roof_clearance": 5.0,
+    "stalactite_count": 24,
+    "stalagmite_count": 20,
+    "column_count": 6,
+    "subterranean_pool": true,
+    "pool_level": -9.0,
+    "bioluminescent": true,
+    "glow_color": [0.2, 0.7, 1.0]
+  },
+  "biomes": [
+    {
+      "name": "Karst_Cliff_Moss",
+      "prototype": "fern",
+      "min_altitude": 2.0,
+      "max_altitude": 22.0,
+      "min_slope_deg": 10.0,
+      "max_slope_deg": 50.0,
+      "min_water_dist": 1.0,
+      "max_water_dist": 25.0,
+      "density": 0.10,
+      "poisson_dist_min": 2.2,
+      "scale_min": 0.8,
+      "scale_max": 1.4,
+      "seed": 301
+    },
+    {
+      "name": "Valley_Bamboo_Reeds",
+      "prototype": "reeds",
+      "min_altitude": 4.2,
+      "max_altitude": 5.5,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 15.0,
+      "min_water_dist": 0.2,
+      "max_water_dist": 5.0,
+      "density": 0.15,
+      "poisson_dist_min": 1.2,
+      "scale_min": 0.7,
+      "scale_max": 1.3,
+      "seed": 302
+    },
+    {
+      "name": "Bioluminescent_Cave_Crystals",
+      "prototype": "fungus_glow",
+      "min_altitude": -12.0,
+      "max_altitude": -0.5,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 80.0,
+      "min_water_dist": 0.0,
+      "max_water_dist": 999.0,
+      "density": 0.18,
+      "poisson_dist_min": 1.1,
+      "scale_min": 0.6,
+      "scale_max": 1.5,
+      "seed": 303
+    }
+  ],
+  "shaders": {
+    "triplanar": true,
+    "rock_texture": "limestone_cliff",
+    "soil_texture": "karst_mossy_earth",
+    "sand_texture": "white_sand",
+    "snow_altitude": 99.0,
+    "water_absorption_color": [0.02, 0.55, 0.72],
+    "water_roughness": 0.03,
+    "water_contact_foam": true
+  },
+  "export": {
+    "export_glb": true,
+    "export_blend": true,
+    "export_heightmap_json": true,
+    "glb_path": "models/genesis_diorama.glb",
+    "blend_path": "models/genesis_diorama_master.blend",
+    "heightmap_path": "models/terrain_heightmap.json"
+  }
+}

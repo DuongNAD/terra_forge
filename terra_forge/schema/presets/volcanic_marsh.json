@@ -1,0 +1,136 @@
+{
+  "name": "Volcanic_Marsh_Diorama",
+  "theme": "volcanic_marsh",
+  "seed": 8848,
+  "diorama": {
+    "width": 160.0,
+    "depth": 160.0,
+    "z_base": -16.0,
+    "resolution": 256
+  },
+  "peaks": [
+    {
+      "name": "Caldera_Crater_Peak",
+      "position": [-15.0, 35.0],
+      "height": 36.0,
+      "radius": 28.0,
+      "shape": "dome",
+      "ridge_angle_deg": 0.0
+    },
+    {
+      "name": "Basalt_Pillar_East",
+      "position": [30.0, 20.0],
+      "height": 26.0,
+      "radius": 14.0,
+      "shape": "horn",
+      "ridge_angle_deg": 0.0
+    }
+  ],
+  "erosion": {
+    "enabled": true,
+    "droplet_count": 28000,
+    "droplet_inertia": 0.06,
+    "sediment_capacity_factor": 4.0,
+    "min_sediment_capacity": 0.01,
+    "erode_speed": 0.40,
+    "deposit_speed": 0.30,
+    "evaporate_speed": 0.02,
+    "gravity": 4.5,
+    "max_droplet_steps": 64,
+    "thermal_iterations": 12,
+    "talus_angle_deg": 40.0,
+    "scree_talus_deposition": 0.50
+  },
+  "hydrology": {
+    "lake_center": [-12.0, -8.0],
+    "lake_radius": 28.0,
+    "lake_level": 4.0,
+    "lake_depth": 15.0,
+    "sea_level": 0.0,
+    "river_enabled": true,
+    "river_carve_depth": 2.5,
+    "river_meander_amplitude": 1.4
+  },
+  "cavern": {
+    "enabled": true,
+    "center": [-10.0, 30.0, -6.5],
+    "radius_x": 16.0,
+    "radius_y": 14.0,
+    "height": 7.0,
+    "entrance_pos": [0.0, 12.0, 1.5],
+    "entrance_radius": 4.5,
+    "min_roof_clearance": 5.0,
+    "stalactite_count": 16,
+    "stalagmite_count": 14,
+    "column_count": 4,
+    "subterranean_pool": true,
+    "pool_level": -8.5,
+    "bioluminescent": true,
+    "glow_color": [0.95, 0.45, 0.1]
+  },
+  "biomes": [
+    {
+      "name": "Basalt_Slope_Conifers",
+      "prototype": "pine_medium",
+      "min_altitude": 8.0,
+      "max_altitude": 24.0,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 35.0,
+      "min_water_dist": 3.0,
+      "max_water_dist": 999.0,
+      "density": 0.07,
+      "poisson_dist_min": 3.0,
+      "scale_min": 0.7,
+      "scale_max": 1.2,
+      "seed": 201
+    },
+    {
+      "name": "Volcanic_Wetland_Reeds",
+      "prototype": "reeds",
+      "min_altitude": 3.8,
+      "max_altitude": 4.8,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 18.0,
+      "min_water_dist": 0.1,
+      "max_water_dist": 4.0,
+      "density": 0.18,
+      "poisson_dist_min": 1.0,
+      "scale_min": 0.7,
+      "scale_max": 1.2,
+      "seed": 202
+    },
+    {
+      "name": "Caldera_Glow_Fungi",
+      "prototype": "fungus_glow",
+      "min_altitude": -12.0,
+      "max_altitude": 10.0,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 65.0,
+      "min_water_dist": 0.0,
+      "max_water_dist": 999.0,
+      "density": 0.14,
+      "poisson_dist_min": 1.3,
+      "scale_min": 0.5,
+      "scale_max": 1.4,
+      "seed": 203
+    }
+  ],
+  "shaders": {
+    "triplanar": true,
+    "rock_texture": "volcanic_rock",
+    "soil_texture": "ash_ground",
+    "sand_texture": "black_sand",
+    "snow_altitude": 99.0,
+    "water_absorption_color": [0.08, 0.50, 0.45],
+    "water_roughness": 0.05,
+    "water_contact_foam": true
+  },
+  "export": {
+    "export_glb": true,
+    "export_blend": true,
+    "export_heightmap_json": true,
+    "glb_path": "models/genesis_diorama.glb",
+    "blend_path": "models/genesis_diorama_master.blend",
+    "heightmap_path": "models/terrain_heightmap.json"
+  }
+}

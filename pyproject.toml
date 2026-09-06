@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "terra-forge"
+version = "0.1.0"
+description = "Next-Generation Procedural 3D Terrain & World Generation Middleware for Blender & AI"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24.0",
+    "pydantic>=2.0.0",
+    "Pillow>=9.0.0",
+]
+
+[project.scripts]
+terraforge = "terra_forge.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["terra_forge*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+

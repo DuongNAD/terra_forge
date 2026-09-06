@@ -1,0 +1,352 @@
+{
+  "name": "Emerald_Sanctuary_Glen",
+  "theme": "alpine_glacial_glen",
+  "seed": 777,
+  "diorama": {
+    "width": 120.0,
+    "depth": 120.0,
+    "z_base": -16.0,
+    "resolution": 256
+  },
+  "peaks": [
+    {
+      "name": "Glacial_Horn_North",
+      "position": [
+        -16.0,
+        32.0
+      ],
+      "height": 36.0,
+      "radius": 22.0,
+      "shape": "horn",
+      "ridge_angle_deg": 0.0
+    },
+    {
+      "name": "Arete_Ridge_East",
+      "position": [
+        24.0,
+        20.0
+      ],
+      "height": 28.0,
+      "radius": 19.0,
+      "shape": "ridge",
+      "ridge_angle_deg": 50.0
+    },
+    {
+      "name": "Sanctuary_Terrace_West",
+      "position": [
+        -28.0,
+        -16.0
+      ],
+      "height": 16.0,
+      "radius": 17.0,
+      "shape": "plateau",
+      "ridge_angle_deg": 0.0
+    }
+  ],
+  "strata": {
+    "enabled": true,
+    "amplitude": 4.0,
+    "wavelength": 32.0,
+    "strike_angle_deg": 42.0,
+    "plunge_wavelength": 110.0,
+    "harmonic_weight": 0.28,
+    "domain_warp_amp": 5.5,
+    "domain_warp_freq": 0.045,
+    "terrace_enabled": false
+  },
+  "tectonic": {
+    "enabled": false,
+    "fault_angle_deg": -25.0,
+    "displacement_throw": 12.0,
+    "scarp_sharpness": 10.0,
+    "fault_offset": 10.0,
+    "fault_length": 0.0
+  },
+  "coastal": {
+    "enabled": false,
+    "sea_level": 0.0,
+    "wave_notch_depth": 1.6,
+    "wave_notch_envelope": 1.2,
+    "beach_slope_coefficient": 0.12,
+    "berm_elevation": 1.2,
+    "beach_width": 14.0,
+    "shelf_transition_dist": 30.0,
+    "deep_water_depth": 12.0,
+    "coastline_angle_deg": null,
+    "coastline_offset": 0.0
+  },
+  "erosion": {
+    "enabled": true,
+    "droplet_count": 40000,
+    "droplet_inertia": 0.05,
+    "sediment_capacity_factor": 4.2,
+    "min_sediment_capacity": 0.01,
+    "erode_speed": 0.36,
+    "deposit_speed": 0.34,
+    "evaporate_speed": 0.014,
+    "gravity": 4.2,
+    "max_droplet_steps": 64,
+    "brush_radius": 2.8,
+    "alluvial_fan_spread": 3.5,
+    "rill_incision_factor": 0.65,
+    "thermal_iterations": 14,
+    "talus_angle_deg": 35.0,
+    "scree_talus_deposition": 0.42
+  },
+  "hydrology": {
+    "lake_center": [
+      -8.0,
+      -6.0
+    ],
+    "lake_radius": 20.0,
+    "lake_level": 4.8,
+    "lake_depth": 14.0,
+    "sea_level": 0.0,
+    "river_enabled": true,
+    "river_carve_depth": 2.2,
+    "river_meander_amplitude": 1.2,
+    "river_stages": [
+      {
+        "name": "High Glacial Cirque Stream",
+        "t_end": 0.28,
+        "start": [
+          -12.0,
+          28.0,
+          13.8,
+          2.4
+        ],
+        "end": [
+          -6.0,
+          20.0,
+          5.2,
+          3.2
+        ]
+      },
+      {
+        "name": "Alpine Gorge to Lake Inflow",
+        "t_end": 0.45,
+        "start": [
+          -6.0,
+          20.0,
+          5.2,
+          3.2
+        ],
+        "end": [
+          -8.0,
+          13.5,
+          4.8,
+          4.5
+        ]
+      },
+      {
+        "name": "Emerald Lake Basin Transit",
+        "t_end": 0.70,
+        "is_lake_transit": true,
+        "start": [
+          -8.0,
+          13.5,
+          4.8,
+          4.5
+        ],
+        "end": [
+          -8.0,
+          -25.5,
+          4.8,
+          4.8
+        ]
+      },
+      {
+        "name": "Southern Canyon Waterfall & Cascade",
+        "t_end": 1.0,
+        "is_outlet": true,
+        "start": [
+          -8.0,
+          -25.5,
+          4.8,
+          4.8
+        ],
+        "end": [
+          12.0,
+          -60.0,
+          -2.0,
+          7.5
+        ]
+      }
+    ],
+    "bay_enabled": false
+  },
+  "cavern": {
+    "enabled": true,
+    "center": [
+      20.0,
+      18.0,
+      -5.5
+    ],
+    "radius_x": 12.0,
+    "radius_y": 10.0,
+    "height": 5.0,
+    "entrance_pos": [
+      6.0,
+      10.0,
+      1.5
+    ],
+    "entrance_radius": 4.0,
+    "min_roof_clearance": 5.0,
+    "stalactite_count": 16,
+    "stalagmite_count": 14,
+    "column_count": 4,
+    "subterranean_pool": true,
+    "pool_level": -7.2,
+    "bioluminescent": true,
+    "glow_color": [
+      0.08,
+      0.92,
+      0.55
+    ]
+  },
+  "biomes": [
+    {
+      "name": "Highland_Alpine_Pine",
+      "prototype": "pine_tall",
+      "min_altitude": 4.8,
+      "max_altitude": 22.0,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 35.0,
+      "min_water_dist": 3.0,
+      "max_water_dist": 999.0,
+      "density": 0.045,
+      "poisson_dist_min": 3.8,
+      "scale_min": 0.7,
+      "scale_max": 1.35,
+      "seed": 701
+    },
+    {
+      "name": "Valley_Broadleaf_Oaks",
+      "prototype": "broadleaf",
+      "min_altitude": 4.8,
+      "max_altitude": 9.0,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 26.0,
+      "min_water_dist": 3.5,
+      "max_water_dist": 22.0,
+      "density": 0.018,
+      "poisson_dist_min": 5.5,
+      "scale_min": 0.8,
+      "scale_max": 1.2,
+      "seed": 702
+    },
+    {
+      "name": "Understory_Ferns_Bushes",
+      "prototype": "shrub",
+      "min_altitude": 4.8,
+      "max_altitude": 14.0,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 32.0,
+      "min_water_dist": 1.5,
+      "max_water_dist": 35.0,
+      "density": 0.04,
+      "poisson_dist_min": 2.8,
+      "scale_min": 0.6,
+      "scale_max": 1.1,
+      "seed": 703
+    },
+    {
+      "name": "Alpine_Meadow_Wildflowers",
+      "prototype": "wildflower",
+      "min_altitude": 4.8,
+      "max_altitude": 12.0,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 22.0,
+      "min_water_dist": 1.5,
+      "max_water_dist": 28.0,
+      "density": 0.07,
+      "poisson_dist_min": 2.0,
+      "scale_min": 0.5,
+      "scale_max": 0.9,
+      "seed": 704
+    },
+    {
+      "name": "Riparian_Shoreline_Reeds",
+      "prototype": "reeds",
+      "min_altitude": 4.8,
+      "max_altitude": 5.4,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 18.0,
+      "min_water_dist": 0.2,
+      "max_water_dist": 3.0,
+      "density": 0.12,
+      "poisson_dist_min": 1.4,
+      "scale_min": 0.6,
+      "scale_max": 1.0,
+      "seed": 705
+    },
+    {
+      "name": "Scree_Talus_Boulders",
+      "prototype": "rock_boulder",
+      "min_altitude": 6.0,
+      "max_altitude": 28.0,
+      "min_slope_deg": 22.0,
+      "max_slope_deg": 52.0,
+      "min_water_dist": 0.0,
+      "max_water_dist": 999.0,
+      "density": 0.05,
+      "poisson_dist_min": 3.2,
+      "scale_min": 0.6,
+      "scale_max": 1.6,
+      "seed": 706
+    },
+    {
+      "name": "Forest_Fallen_Logs",
+      "prototype": "fallen_log",
+      "min_altitude": 4.0,
+      "max_altitude": 14.0,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 24.0,
+      "min_water_dist": 2.5,
+      "max_water_dist": 25.0,
+      "density": 0.025,
+      "poisson_dist_min": 4.5,
+      "scale_min": 0.8,
+      "scale_max": 1.2,
+      "seed": 707
+    }
+  ],
+  "shaders": {
+    "triplanar": true,
+    "rock_texture": "cliff_rock",
+    "soil_texture": "forest_ground",
+    "sand_texture": "wet_sand",
+    "snow_altitude": 21.0,
+    "water_absorption_color": [
+      0.04,
+      0.48,
+      0.62
+    ],
+    "water_roughness": 0.035,
+    "water_contact_foam": true
+  },
+  "atmosphere": {
+    "enabled": true,
+    "sun_time_of_day": 10.2,
+    "max_elevation_deg": 65.0,
+    "sun_intensity_max": 5.5,
+    "optical_depth": 0.1,
+    "mist_density": 0.0018,
+    "mist_anisotropy": 0.7,
+    "mist_absorption_color": [
+      0.76,
+      0.87,
+      0.96
+    ],
+    "use_volumetrics": false,
+    "use_mist_pass": true
+  },
+  "export": {
+    "export_glb": true,
+    "export_blend": true,
+    "export_heightmap_json": true,
+    "glb_path": "models/emerald_sanctuary_diorama.glb",
+    "blend_path": "models/emerald_sanctuary_master.blend",
+    "heightmap_path": "models/emerald_sanctuary_heightmap.json"
+  }
+}
