@@ -1,0 +1,187 @@
+{
+  "asset_id": "118de17ce9a1172261d0f956500e340358421024fb14ef8afca07f68a9927854",
+  "prompt": "primordial jagged horn peak, massive granite crag, glacially sheared arete, sharp bedrock fault lines, frost-weathered rock face, sterile abiotic geology, sheer pyramidal alpine summit, high-elevation exposed strata, cinematic lighting, untouched primordial abiotic wilderness",
+  "seed": 42,
+  "params": {},
+  "flora_type": null,
+  "abiotic_type": 0,
+  "biological_metadata": null,
+  "abiotic_metadata": {
+    "geological_name": "Glacial Horn Peak",
+    "common_name": "Alpine Horn Peak",
+    "category": "topography",
+    "abiotic_type": 0,
+    "solid": true,
+    "typical_height": 25.0,
+    "typical_radius": 15.0,
+    "rock_type": "granite_bedrock"
+  },
+  "dimensions_meters": {
+    "height": 25.0
+  },
+  "lod_stats": {
+    "lod0": 192,
+    "lod1": 192,
+    "lod2": 192
+  },
+  "collision_primitives": {
+    "cylinder": {
+      "radius": 17.6614,
+      "height": 25.0,
+      "center": [
+        0.0,
+        12.5,
+        0.0
+      ]
+    },
+    "aabb": {
+      "min_vec": [
+        -17.6614,
+        0.0,
+        -17.6614
+      ],
+      "max_vec": [
+        17.6614,
+        25.0,
+        17.6614
+      ],
+      "size": [
+        35.3227,
+        25.0,
+        35.3227
+      ],
+      "center": [
+        0.0,
+        12.5,
+        0.0
+      ]
+    },
+    "convex_hull": {
+      "vertex_count": 9,
+      "simplex_count": 14,
+      "vertices": [
+        [
+          -15.4673,
+          0.0,
+          15.5569
+        ],
+        [
+          -17.6614,
+          0.0,
+          -7.2559
+        ],
+        [
+          -15.5569,
+          0.0,
+          -15.4673
+        ],
+        [
+          7.2559,
+          0.0,
+          -17.6614
+        ],
+        [
+          15.4673,
+          0.0,
+          -15.5569
+        ],
+        [
+          17.6614,
+          0.0,
+          7.2559
+        ],
+        [
+          15.5569,
+          0.0,
+          15.4673
+        ],
+        [
+          -7.2559,
+          0.0,
+          17.6614
+        ],
+        [
+          -0.0,
+          25.0,
+          0.0
+        ]
+      ],
+      "simplices": [
+        [
+          0,
+          53,
+          2
+        ],
+        [
+          6,
+          53,
+          8
+        ],
+        [
+          9,
+          53,
+          8
+        ],
+        [
+          3,
+          53,
+          2
+        ],
+        [
+          11,
+          0,
+          53
+        ],
+        [
+          11,
+          9,
+          53
+        ],
+        [
+          5,
+          6,
+          53
+        ],
+        [
+          5,
+          3,
+          53
+        ],
+        [
+          5,
+          9,
+          8
+        ],
+        [
+          5,
+          0,
+          2
+        ],
+        [
+          5,
+          6,
+          8
+        ],
+        [
+          5,
+          3,
+          2
+        ],
+        [
+          5,
+          11,
+          0
+        ],
+        [
+          5,
+          11,
+          9
+        ]
+      ],
+      "volume": 9121.3159,
+      "area": 3008.7814
+    }
+  },
+  "created_at": "2026-09-10T05:49:03.924371+00:00",
+  "source": "procedural_normalizer"
+}

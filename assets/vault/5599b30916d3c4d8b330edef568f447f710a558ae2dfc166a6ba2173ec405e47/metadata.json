@@ -1,0 +1,336 @@
+{
+  "asset_id": "5599b30916d3c4d8b330edef568f447f710a558ae2dfc166a6ba2173ec405e47",
+  "prompt": "subterranean limestone stalactite, conical calcite speleothem, mineral dripstone with crystalline texture, dripping cavern ceiling rock, natural calcified mineral deposition, fluted speleothem formation, cinematic lighting, untouched primordial abiotic wilderness",
+  "seed": 42,
+  "params": {},
+  "flora_type": null,
+  "abiotic_type": 5,
+  "biological_metadata": null,
+  "abiotic_metadata": {
+    "geological_name": "Conical Calcite Dripstone",
+    "common_name": "Cave Stalactite",
+    "category": "speleothem",
+    "abiotic_type": 5,
+    "solid": true,
+    "typical_height": 2.5,
+    "typical_radius": 0.6,
+    "rock_type": "limestone_calcite"
+  },
+  "dimensions_meters": {
+    "height": 2.5
+  },
+  "lod_stats": {
+    "lod0": 10368,
+    "lod1": 2000,
+    "lod2": 864
+  },
+  "collision_primitives": {
+    "cylinder": {
+      "radius": 0.4478,
+      "height": 2.5,
+      "center": [
+        0.0,
+        1.25,
+        0.0
+      ]
+    },
+    "aabb": {
+      "min_vec": [
+        -0.755,
+        0.0,
+        -0.7226
+      ],
+      "max_vec": [
+        0.755,
+        2.5,
+        0.7226
+      ],
+      "size": [
+        1.5099,
+        2.5,
+        1.4453
+      ],
+      "center": [
+        0.0,
+        1.25,
+        0.0
+      ]
+    },
+    "convex_hull": {
+      "vertex_count": 19,
+      "simplex_count": 34,
+      "vertices": [
+        [
+          -0.362,
+          2.337,
+          -0.4361
+        ],
+        [
+          -0.2712,
+          0.625,
+          -0.2789
+        ],
+        [
+          0.4427,
+          1.8533,
+          0.2048
+        ],
+        [
+          0.3299,
+          0.5598,
+          0.294
+        ],
+        [
+          -0.2282,
+          2.5,
+          0.7226
+        ],
+        [
+          -0.0087,
+          0.0,
+          0.0274
+        ],
+        [
+          0.56,
+          0.95,
+          -0.0164
+        ],
+        [
+          0.4281,
+          2.5,
+          -0.7226
+        ],
+        [
+          -0.5419,
+          1.5109,
+          -0.0957
+        ],
+        [
+          -0.5602,
+          1.0163,
+          -0.0459
+        ],
+        [
+          -0.14,
+          1.0,
+          0.5699
+        ],
+        [
+          0.6368,
+          1.7087,
+          -0.3503
+        ],
+        [
+          0.755,
+          2.5,
+          -0.3226
+        ],
+        [
+          0.5992,
+          1.313,
+          -0.3305
+        ],
+        [
+          -0.6395,
+          1.8424,
+          0.4568
+        ],
+        [
+          -0.5869,
+          1.4239,
+          0.409
+        ],
+        [
+          0.3702,
+          2.0304,
+          -0.6673
+        ],
+        [
+          0.3588,
+          1.3,
+          -0.6026
+        ],
+        [
+          -0.755,
+          2.5,
+          0.3949
+        ]
+      ],
+      "simplices": [
+        [
+          39,
+          14,
+          45
+        ],
+        [
+          39,
+          33,
+          14
+        ],
+        [
+          13,
+          33,
+          14
+        ],
+        [
+          13,
+          33,
+          16
+        ],
+        [
+          25,
+          7,
+          45
+        ],
+        [
+          25,
+          26,
+          45
+        ],
+        [
+          25,
+          26,
+          7
+        ],
+        [
+          23,
+          7,
+          45
+        ],
+        [
+          10,
+          26,
+          16
+        ],
+        [
+          10,
+          44,
+          16
+        ],
+        [
+          10,
+          26,
+          7
+        ],
+        [
+          10,
+          44,
+          7
+        ],
+        [
+          40,
+          33,
+          16
+        ],
+        [
+          40,
+          39,
+          33
+        ],
+        [
+          40,
+          26,
+          16
+        ],
+        [
+          40,
+          26,
+          45
+        ],
+        [
+          40,
+          39,
+          45
+        ],
+        [
+          11,
+          14,
+          36
+        ],
+        [
+          11,
+          13,
+          14
+        ],
+        [
+          22,
+          11,
+          36
+        ],
+        [
+          22,
+          11,
+          13
+        ],
+        [
+          22,
+          13,
+          16
+        ],
+        [
+          42,
+          44,
+          7
+        ],
+        [
+          42,
+          23,
+          7
+        ],
+        [
+          42,
+          23,
+          44
+        ],
+        [
+          37,
+          22,
+          36
+        ],
+        [
+          37,
+          23,
+          44
+        ],
+        [
+          37,
+          44,
+          16
+        ],
+        [
+          37,
+          22,
+          16
+        ],
+        [
+          35,
+          23,
+          36
+        ],
+        [
+          35,
+          37,
+          36
+        ],
+        [
+          35,
+          37,
+          23
+        ],
+        [
+          23,
+          14,
+          36
+        ],
+        [
+          23,
+          14,
+          45
+        ]
+      ],
+      "volume": 1.8475,
+      "area": 8.8614
+    }
+  },
+  "source": "high_fidelity_normalizer"
+}

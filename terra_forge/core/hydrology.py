@@ -71,7 +71,46 @@ class HydrologyEngine:
     def __init__(self, hf: Heightfield2D, config: HydrologyConfig):
         self.hf = hf
         self.cfg = config
+        if self.cfg.river_stages:
+            self.cfg.river_stages = self._normalize_stages(self.cfg.river_stages)
         self.dist_to_water = np.full((self.hf.res_y, self.hf.res_x), 999.0, dtype=np.float64)
+
+    @staticmethod
+    def _normalize_stages(raw_stages: list[dict]) -> list[dict]:
+        """
+        Normalizes river stages from either waypoint dicts [{'t': ..., 'x': ..., 'y': ...}]
+        or segment dicts [{'start': (...), 'end': (...)}].
+        """
+        if not raw_stages:
+            return []
+        first = raw_stages[0]
+        if isinstance(first, dict) and ("x" in first or "X" in first) and "start" not in first:
+            normalized = []
+            n_pts = len(raw_stages)
+            for i in range(n_pts - 1):
+                p0, p1 = raw_stages[i], raw_stages[i + 1]
+                t0 = float(p0.get("t", i / max(1, n_pts - 1)))
+                t1 = float(p1.get("t", (i + 1) / max(1, n_pts - 1)))
+                x0 = float(p0.get("x", p0.get("X", 0.0)))
+                y0 = float(p0.get("y", p0.get("Y", 0.0)))
+                z0 = float(p0.get("z", p0.get("Z", 0.0)))
+                w0 = float(p0.get("width", 4.0))
+
+                x1 = float(p1.get("x", p1.get("X", 0.0)))
+                y1 = float(p1.get("y", p1.get("Y", 0.0)))
+                z1 = float(p1.get("z", p1.get("Z", 0.0)))
+                w1 = float(p1.get("width", 4.0))
+
+                normalized.append({
+                    "name": p0.get("name", f"Segment_{i}"),
+                    "t_start": t0,
+                    "t_end": t1,
+                    "start": (x0, y0, z0, w0),
+                    "end": (x1, y1, z1, w1),
+                })
+            return normalized
+        return raw_stages
+
 
     def evaluate_river_spline(
         self, t: np.ndarray | float
@@ -291,8 +330,20 @@ class HydrologyEngine:
 
             if np.any(mask):
                 weight = 1.0 - (dist[mask] / r_inf)
-                vx_field[iy0:iy1, ix0:ix1][mask] = vx_spline[i] * weight
-                vy_field[iy0:iy1, ix0:ix1][mask] = vy_spline[i] * weight
+                cur_vx = vx_field[iy0:iy1, ix0:ix1][mask]
+                cur_vy = vy_field[iy0:iy1, ix0:ix1][mask]
+                cur_speed = np.sqrt(cur_vx**2 + cur_vy**2)
+
+                new_vx = vx_spline[i] * weight
+                new_vy = vy_spline[i] * weight
+                new_speed = np.sqrt(new_vx**2 + new_vy**2)
+
+                better = new_speed > cur_speed
+                if np.any(better):
+                    sub_vx = vx_field[iy0:iy1, ix0:ix1]
+                    sub_vy = vy_field[iy0:iy1, ix0:ix1]
+                    sub_vx[mask] = np.where(better, new_vx, cur_vx)
+                    sub_vy[mask] = np.where(better, new_vy, cur_vy)
 
         return vx_field, vy_field
 
@@ -333,7 +384,53 @@ class HydrologyEngine:
                 # Parabolic trench
                 trench = (1.0 - norm_d**2) * carve_depth
                 target_bed = cz - trench
-                self.hf.Z[iy0:iy1, ix0:ix1][mask] = np.minimum(self.hf.Z[iy0:iy1, ix0:ix1][mask], target_bed)
+                sub_z = self.hf.Z[iy0:iy1, ix0:ix1]
+                sub_z[mask] = np.minimum(sub_z[mask], target_bed)
+
+    def rasterize_water_depth(self) -> np.ndarray:
+        """
+        Rasterizes physical water depth across lake basin and river channels into self.hf.water_depth.
+        Ensures seamless coupling with WorldArtifact v2 flow export layer.
+        """
+        if not hasattr(self.hf, "water_depth") or self.hf.water_depth is None:
+            self.hf.water_depth = np.zeros((self.hf.res_y, self.hf.res_x), dtype=np.float64)
+
+        # 1. Central Lake Water Depth: (water_level - Z) where submerged
+        if self.cfg.lake_radius > 0.0:
+            lx, ly = self.cfg.lake_center
+            r = self.cfg.lake_radius
+            dist_lake = np.sqrt((self.hf.X - lx)**2 + (self.hf.Y - ly)**2)
+            lake_mask = (dist_lake <= r) & (self.hf.Z < self.cfg.lake_level)
+            if np.any(lake_mask):
+                self.hf.water_depth[lake_mask] = np.maximum(
+                    self.hf.water_depth[lake_mask],
+                    self.cfg.lake_level - self.hf.Z[lake_mask],
+                )
+
+        # 2. River Channel Water Depth: (cz - Z) along parabolic channel
+        if self.cfg.river_enabled and self.cfg.river_stages:
+            t_samples = np.linspace(0.0, 1.0, 300)
+            rx, ry, rz, rw = self.evaluate_river_spline(t_samples)
+            for i in range(len(t_samples)):
+                cx, cy, cz, width = float(rx[i]), float(ry[i]), float(rz[i]), float(rw[i])
+                r_inf = width * 0.75
+                gx_min, gy_min = self.hf.world_to_grid(cx - r_inf, cy - r_inf)
+                gx_max, gy_max = self.hf.world_to_grid(cx + r_inf, cy + r_inf)
+                ix0, ix1 = max(0, int(gx_min)), min(self.hf.res_x, int(gx_max) + 1)
+                iy0, iy1 = max(0, int(gy_min)), min(self.hf.res_y, int(gy_max) + 1)
+                if ix1 <= ix0 or iy1 <= iy0:
+                    continue
+                sub_x = self.hf.X[iy0:iy1, ix0:ix1]
+                sub_y = self.hf.Y[iy0:iy1, ix0:ix1]
+                dist = np.sqrt((sub_x - cx)**2 + (sub_y - cy)**2)
+                mask = (dist <= r_inf) & (self.hf.Z[iy0:iy1, ix0:ix1] < cz)
+                if np.any(mask):
+                    sub_z = self.hf.Z[iy0:iy1, ix0:ix1]
+                    sub_wd = self.hf.water_depth[iy0:iy1, ix0:ix1]
+                    depth = cz - sub_z[mask]
+                    sub_wd[mask] = np.maximum(sub_wd[mask], depth)
+
+        return self.hf.water_depth
 
     def compute_water_distance_field(self) -> np.ndarray:
         """

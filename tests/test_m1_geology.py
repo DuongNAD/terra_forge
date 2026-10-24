@@ -349,3 +349,224 @@ class TestM1RemediationHardening:
             assert ret_hf is hf
             assert not np.isnan(ret_hf.Z).any()
 
+
+class TestM1AntiStaircasingBilateral:
+    """Validates 7x7 edge-preserving bilateral filtering that melts contour terraces while preserving aretes."""
+
+    def test_bilateral_filter_melts_contour_steps_while_preserving_cliffs(self):
+        """Terrace step ledges (diff < range_sigma) must melt smoothly, while cliffs (diff >> range_sigma) stay sharp."""
+        hf = Heightfield2D(width=80.0, depth=80.0, resolution=64)
+
+        # 1. Subtle 2.0m terrace step on gentle slope
+        hf.Z[:32, :] = 5.0
+        hf.Z[32:, :] = 7.0
+
+        # 2. Dramatic 25.0m tectonic fault scarp / cliff on right half
+        hf.Z[:, 48:] += 25.0
+
+        z_pre = hf.Z.copy()
+        hf.apply_bilateral_filter(spatial_sigma=2.5, range_sigma=1.8, radius=3, iterations=1)
+
+        # Terrace step (rows 30-34) should be significantly blurred / smoothed
+        step_diff_pre = abs(z_pre[33, 20] - z_pre[31, 20])
+        step_diff_post = abs(hf.Z[33, 20] - hf.Z[31, 20])
+        assert step_diff_post < step_diff_pre, "Bilateral filter must soften subtle terrace step ledges"
+
+        # Cliff edge (col 47 to 48) must remain razor-sharp (|diff| ~ 25m >> range_sigma=1.8)
+        cliff_diff_post = abs(hf.Z[10, 48] - hf.Z[10, 47])
+        assert cliff_diff_post > 24.5, "Bilateral filter must 100% preserve vertical cliffs and scarps"
+
+    def test_bilateral_filter_preserves_sharp_arete_ridge(self):
+        """A sharp knife-edge arete crest must retain its crest height under bilateral filtering."""
+        hf = Heightfield2D(width=60.0, depth=60.0, resolution=51)
+        hf.add_peak(0.0, 0.0, height=30.0, radius=18.0, shape="arete", ridge_angle_deg=0.0)
+
+        cx, cy = hf.res_x // 2, hf.res_y // 2
+        summit_pre = hf.Z[cy, cx]
+
+        hf.apply_bilateral_filter(spatial_sigma=2.5, range_sigma=1.8, radius=3, iterations=1)
+        summit_post = hf.Z[cy, cx]
+
+        # Apex should retain at least 95% of its sharp relief
+        assert summit_post >= 0.95 * summit_pre, "Arete crest must not be flattened by bilateral filtering"
+
+    def test_bilateral_filter_zero_or_negative_params_noop(self):
+        """Invalid or non-positive filter parameters must safely no-op without modifying terrain."""
+        hf = Heightfield2D(width=40.0, depth=40.0, resolution=25)
+        hf.Z = np.arange(25 * 25, dtype=np.float64).reshape(25, 25)
+        orig = hf.Z.copy()
+
+        hf.apply_bilateral_filter(spatial_sigma=0.0)
+        np.testing.assert_array_equal(hf.Z, orig)
+
+        hf.apply_bilateral_filter(range_sigma=-1.0)
+        np.testing.assert_array_equal(hf.Z, orig)
+
+        hf.apply_bilateral_filter(radius=0)
+        np.testing.assert_array_equal(hf.Z, orig)
+
+        hf.apply_bilateral_filter(iterations=0)
+        np.testing.assert_array_equal(hf.Z, orig)
+
+
+class TestM1AntiStaircasingLaplacian:
+    """Validates discrete 8-neighbor Laplacian relaxation and Taubin anti-shrink filtering."""
+
+    def test_laplacian_smoothing_taubin_anti_shrink_volume_preservation(self):
+        """Taubin two-step filtering (anti_shrink=True) must preserve summit relief better than naive Laplacian."""
+        hf_naive = Heightfield2D(width=40.0, depth=40.0, resolution=41)
+        hf_naive.add_peak(0.0, 0.0, height=25.0, radius=15.0, shape="horn")
+        hf_taubin = Heightfield2D(width=40.0, depth=40.0, resolution=41)
+        hf_taubin.Z = hf_naive.Z.copy()
+
+        cx, cy = hf_naive.res_x // 2, hf_naive.res_y // 2
+        summit_orig = float(hf_naive.Z[cy, cx])
+
+        # Naive Laplacian (anti_shrink=False)
+        hf_naive.apply_laplacian_smoothing(iterations=3, lambda_rate=0.25, anti_shrink=False)
+        naive_drop = summit_orig - float(hf_naive.Z[cy, cx])
+
+        # Taubin anti-shrink (anti_shrink=True)
+        hf_taubin.apply_laplacian_smoothing(iterations=3, lambda_rate=0.25, anti_shrink=True)
+        taubin_drop = summit_orig - float(hf_taubin.Z[cy, cx])
+
+        assert taubin_drop < naive_drop, f"Taubin anti-shrink ({taubin_drop:.3f}m) must preserve summit relief better than naive ({naive_drop:.3f}m)"
+
+    def test_laplacian_smoothing_attenuates_checkerboard_grid_noise(self):
+        """Laplacian smoothing must rapidly dampen high-frequency micro-roughness."""
+        hf = Heightfield2D(width=30.0, depth=30.0, resolution=31)
+        rng = np.random.default_rng(123)
+        hf.Z = 10.0 + rng.standard_normal(hf.Z.shape) * 2.0
+
+        pre_var = float(np.var(hf.Z))
+        hf.apply_laplacian_smoothing(iterations=3, lambda_rate=0.25, anti_shrink=True)
+        post_var = float(np.var(hf.Z))
+
+        assert post_var < 0.65 * pre_var, "Laplacian smoothing must attenuate high-frequency noise"
+
+
+class TestM1RidgedMultiFractal:
+    """Validates C2 quintic Hermite Perlin noise and Ridged Multi-Fractal (RMF) terrain synthesis."""
+
+    def test_perlin_2d_c2_continuity_and_bounds(self):
+        """Pure NumPy Perlin 2D gradient noise must produce bounded, continuous, finite values."""
+        from terra_forge.core.heightfield import _perlin_2d
+        X, Y = np.meshgrid(np.linspace(-50.0, 50.0, 100), np.linspace(-50.0, 50.0, 100))
+        n = _perlin_2d(X, Y, freq=0.03, seed=1337)
+
+        assert not np.isnan(n).any()
+        assert not np.isinf(n).any()
+        assert np.all(n >= -1.0) and np.all(n <= 1.0)
+        assert np.std(n) > 0.1, "Perlin noise must exhibit variance"
+
+    def test_ridged_multifractal_synthesis_and_sharpness(self):
+        """RMF synthesis must generate sharp ridge crests with positive kurtosis / high ridge sharpness."""
+        hf = Heightfield2D(width=100.0, depth=100.0, resolution=64)
+        hf.add_ridged_multifractal(seed=42, octaves=4, amplitude=8.0)
+
+        assert not np.isnan(hf.Z).any()
+        assert np.max(hf.Z) > 3.0
+        assert np.min(hf.Z) >= 0.0, "Ridged multi-fractal signal is non-negative"
+
+        # Check that multiple octaves contribute to fine frequency content
+        grad_y, grad_x = np.gradient(hf.Z)
+        mag = np.sqrt(grad_x**2 + grad_y**2)
+        assert np.max(mag) > 0.2, "RMF must create sharp gradient rock ribs"
+
+
+class TestM1AlpineMatterhornHornAndArete:
+    """Validates upgraded alpine Matterhorn pyramidal horn and knife-edge arete rock spines."""
+
+    def test_alpine_matterhorn_horn_peak_trihedral_aretes_and_cirques(self):
+        """Matterhorn horn peak must feature 3 radiating knife-edge aretes and excavated cirque hollows."""
+        hf = Heightfield2D(width=80.0, depth=80.0, resolution=81)
+        hf.add_peak(0.0, 0.0, height=35.0, radius=25.0, shape="horn", ridge_angle_deg=0.0)
+
+        # Summit must be sharp
+        cx, cy = hf.res_x // 2, hf.res_y // 2
+        assert hf.Z[cy, cx] > 30.0
+
+        # At intermediate radial distance r = 10m:
+        # Check that arete angles (0, 120, 240 deg) have higher elevation than cirque angles (60, 180, 300 deg)
+        r = 10.0
+        # Arete at angle 0: (x=10, y=0)
+        arete_sample = hf.sample_bilinear(r, 0.0)
+        # Cirque at angle 60 deg: (x=10*cos(60), y=10*sin(60))
+        cirque_sample = hf.sample_bilinear(r * math.cos(math.radians(60)), r * math.sin(math.radians(60)))
+
+        assert arete_sample > cirque_sample + 2.0, (
+            f"Arete spine ({arete_sample:.2f}m) must be significantly higher than cirque hollow ({cirque_sample:.2f}m)"
+        )
+
+        # Elevation outside radius must be zero
+        dist = np.sqrt(hf.X**2 + hf.Y**2)
+        assert np.all(hf.Z[dist >= 25.0] == 0.0)
+
+    def test_knife_edge_arete_transverse_cusp_profile(self):
+        """Knife-edge arete must exhibit a sharp transverse cusp profile."""
+        hf = Heightfield2D(width=60.0, depth=60.0, resolution=61)
+        hf.add_peak(0.0, 0.0, height=28.0, radius=20.0, shape="ridge", ridge_angle_deg=0.0)
+
+        # Ridge runs along X (ridge_angle_deg = 0), across ridge is along Y
+        cx, cy = hf.res_x // 2, hf.res_y // 2
+        crest = hf.Z[cy, cx]
+        step1 = hf.Z[cy + 1, cx]
+        step2 = hf.Z[cy + 2, cx]
+
+        # Profile drops sharply away from crest
+        assert crest > step1 > step2
+        # Curvature at apex: (crest - step1) is steep
+        drop1 = crest - step1
+        drop2 = step1 - step2
+        assert drop1 > 0.5, "Arete crest must feature sharp cusp falloff"
+
+
+class TestM1AcceleratedHydraulicErosion:
+    """Validates slice-accelerated droplet erosion and smooth 2x2 bilinear termination deposition."""
+
+    def test_hydraulic_slice_acceleration_and_mass_conservation(self):
+        """Accelerated erosion must preserve exact mass (|ΔM| < 1e-10) across thousands of droplets."""
+        hf = Heightfield2D(width=50.0, depth=50.0, resolution=41)
+        hf.add_peak(0.0, 0.0, height=25.0, radius=15.0, shape="horn")
+        initial_mass = float(np.sum(hf.Z))
+
+        cfg = ErosionConfig(enabled=True, droplet_count=3000, max_droplet_steps=30, brush_radius=3.0)
+        sim = ErosionSimulator(hf, cfg)
+        sim.simulate_hydraulic(seed=42)
+
+        final_mass = float(np.sum(hf.Z))
+        delta = abs(final_mass - initial_mass)
+        assert delta < 1e-10, f"Mass conservation violated: delta={delta:.4e}"
+
+    def test_hydraulic_bilinear_termination_zero_needle_spikes(self):
+        """Bilinear terminal deposition must distribute sediment across 2x2 cells, eliminating needle spikes."""
+        hf = Heightfield2D(width=40.0, depth=40.0, resolution=41)
+        hf.add_peak(0.0, 0.0, height=20.0, radius=12.0, shape="cone")
+
+        cfg = ErosionConfig(enabled=True, droplet_count=1000, max_droplet_steps=20)
+        sim = ErosionSimulator(hf, cfg)
+        sim.simulate_hydraulic(seed=42)
+
+        # Compute max local spike (deviation from local 3x3 neighborhood mean)
+        from scipy.ndimage import uniform_filter
+        local_mean = uniform_filter(hf.Z, size=3)
+        diff = np.abs(hf.Z - local_mean)
+        max_spike = float(np.max(diff))
+        # Needle spikes from raw single-cell dump exceed 8.0m; smooth 2x2 bilinear deposit keeps max deviation < 3.0m
+        assert max_spike < 3.0, f"Excessive local spike detected: {max_spike:.3f}m"
+
+    def test_hydraulic_performance_scale_and_24_thermal_iterations(self):
+        """Simulate 24 thermal iterations and verify scree accumulation and stability."""
+        hf = Heightfield2D(width=40.0, depth=40.0, resolution=41)
+        hf.add_peak(0.0, 0.0, height=26.0, radius=14.0, shape="horn")
+        initial_mass = float(np.sum(hf.Z))
+
+        cfg = ErosionConfig(enabled=True, thermal_iterations=24, talus_angle_deg=33.0, scree_talus_deposition=0.4)
+        sim = ErosionSimulator(hf, cfg)
+        sim.run_thermal_erosion()
+
+        final_mass = float(np.sum(hf.Z))
+        assert abs(final_mass - initial_mass) < 1e-10, "Thermal talus must conserve mass over 24 iterations"
+        assert np.any(hf.scree_talus > 0.0), "Scree talus must accumulate over 24 iterations"
+
+

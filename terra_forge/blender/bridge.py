@@ -17,6 +17,10 @@ from typing import Dict, Any, Optional
 
 DEFAULT_BLENDER_PATHS = [
     "/Applications/Blender.app/Contents/MacOS/Blender",
+    r"C:\Program Files\Blender Foundation\Blender 4.5\blender.exe",
+    r"C:\Program Files\Blender Foundation\Blender 4.2\blender.exe",
+    r"C:\Program Files\Blender Foundation\Blender 4.1\blender.exe",
+    r"C:\Program Files\Blender Foundation\Blender 5.0\blender.exe",
     "blender",
 ]
 
@@ -33,6 +37,13 @@ class BlenderBridge:
         for candidate in DEFAULT_BLENDER_PATHS:
             if os.path.exists(candidate):
                 return candidate
+
+        # Check Windows Program Files dynamically
+        win_bf = Path(r"C:\Program Files\Blender Foundation")
+        if win_bf.exists():
+            for exe in sorted(win_bf.glob("*/blender.exe"), reverse=True):
+                if exe.exists():
+                    return str(exe)
 
         return "blender"
 

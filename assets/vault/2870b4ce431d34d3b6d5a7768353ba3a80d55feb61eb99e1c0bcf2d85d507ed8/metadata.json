@@ -1,0 +1,202 @@
+{
+  "asset_id": "2870b4ce431d34d3b6d5a7768353ba3a80d55feb61eb99e1c0bcf2d85d507ed8",
+  "prompt": "massive fused cavern column pillar, grand limestone speleothem spanning floor to ceiling, fluted calcified flowstone pillar, subterranean geological column, ancient banded limestone pillar, cinematic lighting, untouched primordial abiotic wilderness",
+  "seed": 42,
+  "params": {},
+  "flora_type": null,
+  "abiotic_type": 7,
+  "biological_metadata": null,
+  "abiotic_metadata": {
+    "geological_name": "Fused Monumental Pillar",
+    "common_name": "Cavern Column",
+    "category": "speleothem",
+    "abiotic_type": 7,
+    "solid": true,
+    "typical_height": 8.0,
+    "typical_radius": 1.5,
+    "rock_type": "banded_flowstone"
+  },
+  "dimensions_meters": {
+    "height": 8.0
+  },
+  "lod_stats": {
+    "lod0": 320,
+    "lod1": 320,
+    "lod2": 300
+  },
+  "collision_primitives": {
+    "cylinder": {
+      "radius": 1.4733,
+      "height": 8.0,
+      "center": [
+        0.0,
+        4.0,
+        0.0
+      ]
+    },
+    "aabb": {
+      "min_vec": [
+        -1.4733,
+        0.0,
+        -1.4697
+      ],
+      "max_vec": [
+        1.4733,
+        8.0,
+        1.4697
+      ],
+      "size": [
+        2.9465,
+        8.0,
+        2.9395
+      ],
+      "center": [
+        0.0,
+        4.0,
+        0.0
+      ]
+    },
+    "convex_hull": {
+      "vertex_count": 10,
+      "simplex_count": 16,
+      "vertices": [
+        [
+          -1.1676,
+          0.0,
+          1.1743
+        ],
+        [
+          -1.4733,
+          0.0,
+          -0.6053
+        ],
+        [
+          -0.6138,
+          0.0,
+          -1.4697
+        ],
+        [
+          1.1676,
+          0.0,
+          -1.1743
+        ],
+        [
+          1.4733,
+          0.0,
+          0.6053
+        ],
+        [
+          0.6138,
+          0.0,
+          1.4697
+        ],
+        [
+          -1.1676,
+          8.0,
+          1.1743
+        ],
+        [
+          -0.868,
+          8.0,
+          -0.863
+        ],
+        [
+          1.1676,
+          8.0,
+          -1.1743
+        ],
+        [
+          0.868,
+          8.0,
+          0.863
+        ]
+      ],
+      "simplices": [
+        [
+          0,
+          12,
+          2
+        ],
+        [
+          10,
+          0,
+          12
+        ],
+        [
+          6,
+          17,
+          8
+        ],
+        [
+          15,
+          12,
+          2
+        ],
+        [
+          19,
+          17,
+          8
+        ],
+        [
+          19,
+          10,
+          8
+        ],
+        [
+          19,
+          10,
+          12
+        ],
+        [
+          4,
+          15,
+          2
+        ],
+        [
+          4,
+          15,
+          17
+        ],
+        [
+          4,
+          6,
+          17
+        ],
+        [
+          19,
+          15,
+          17
+        ],
+        [
+          19,
+          15,
+          12
+        ],
+        [
+          4,
+          0,
+          2
+        ],
+        [
+          4,
+          10,
+          8
+        ],
+        [
+          4,
+          10,
+          0
+        ],
+        [
+          4,
+          6,
+          8
+        ]
+      ],
+      "volume": 45.5652,
+      "area": 82.3978
+    }
+  },
+  "created_at": "2026-09-10T05:49:09.255437+00:00",
+  "source": "procedural_normalizer"
+}

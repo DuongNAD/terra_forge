@@ -1,0 +1,337 @@
+{
+  "asset_id": "dbe91347b91e0cbb8701b4550f1ac5b076c5693df4af00a7e52f415e99e4f8ae",
+  "prompt": "cluster of glowing cavern mineral crystals, crystalline fluorite calcite druse, phosphorescent geological formation, emissive cyan crystal cluster, raw mineral specimen, faceted crystal geode, mineral crust, cinematic lighting, untouched primordial abiotic wilderness",
+  "seed": 42,
+  "params": {},
+  "flora_type": null,
+  "abiotic_type": 8,
+  "biological_metadata": null,
+  "abiotic_metadata": {
+    "geological_name": "Phosphorescent Mineral Druse",
+    "common_name": "Bioluminescent Cavern Crystal",
+    "category": "mineral",
+    "abiotic_type": 8,
+    "solid": true,
+    "typical_height": 1.8,
+    "typical_radius": 1.0,
+    "rock_type": "emissive_fluorite"
+  },
+  "dimensions_meters": {
+    "height": 1.8
+  },
+  "lod_stats": {
+    "lod0": 194,
+    "lod1": 194,
+    "lod2": 194
+  },
+  "collision_primitives": {
+    "cylinder": {
+      "radius": 0.916,
+      "height": 1.8,
+      "center": [
+        0.0,
+        0.9,
+        0.0
+      ]
+    },
+    "aabb": {
+      "min_vec": [
+        -0.9252,
+        0.0,
+        -0.9252
+      ],
+      "max_vec": [
+        0.9252,
+        1.8,
+        0.9252
+      ],
+      "size": [
+        1.8505,
+        1.8,
+        1.8505
+      ],
+      "center": [
+        0.0,
+        0.9,
+        0.0
+      ]
+    },
+    "convex_hull": {
+      "vertex_count": 19,
+      "simplex_count": 34,
+      "vertices": [
+        [
+          -0.6523,
+          0.0,
+          0.6561
+        ],
+        [
+          -0.9252,
+          0.0,
+          0.0027
+        ],
+        [
+          0.4191,
+          0.6671,
+          0.7068
+        ],
+        [
+          -0.0027,
+          0.0,
+          -0.9252
+        ],
+        [
+          0.9252,
+          0.0,
+          -0.0027
+        ],
+        [
+          0.6561,
+          0.0,
+          0.6523
+        ],
+        [
+          0.0027,
+          0.0,
+          0.9252
+        ],
+        [
+          0.5871,
+          0.2523,
+          -0.5905
+        ],
+        [
+          0.1909,
+          1.5123,
+          0.1898
+        ],
+        [
+          -0.0,
+          1.8,
+          0.0
+        ],
+        [
+          -0.5475,
+          1.2636,
+          -0.0549
+        ],
+        [
+          -0.6309,
+          1.1865,
+          0.3675
+        ],
+        [
+          -0.1827,
+          0.9967,
+          -0.8045
+        ],
+        [
+          0.7559,
+          1.2615,
+          0.0246
+        ],
+        [
+          0.6765,
+          1.5455,
+          -0.1618
+        ],
+        [
+          0.0529,
+          1.005,
+          0.7711
+        ],
+        [
+          -0.7542,
+          0.71,
+          0.4106
+        ],
+        [
+          -0.5424,
+          1.0011,
+          -0.627
+        ],
+        [
+          0.6903,
+          0.7773,
+          -0.5472
+        ]
+      ],
+      "simplices": [
+        [
+          41,
+          3,
+          1
+        ],
+        [
+          19,
+          41,
+          1
+        ],
+        [
+          9,
+          3,
+          5
+        ],
+        [
+          9,
+          44,
+          5
+        ],
+        [
+          9,
+          44,
+          3
+        ],
+        [
+          22,
+          41,
+          15
+        ],
+        [
+          22,
+          41,
+          3
+        ],
+        [
+          22,
+          44,
+          3
+        ],
+        [
+          18,
+          41,
+          15
+        ],
+        [
+          18,
+          19,
+          15
+        ],
+        [
+          18,
+          19,
+          41
+        ],
+        [
+          6,
+          2,
+          7
+        ],
+        [
+          28,
+          44,
+          5
+        ],
+        [
+          28,
+          22,
+          15
+        ],
+        [
+          28,
+          22,
+          44
+        ],
+        [
+          32,
+          19,
+          15
+        ],
+        [
+          32,
+          2,
+          7
+        ],
+        [
+          32,
+          0,
+          7
+        ],
+        [
+          32,
+          0,
+          19
+        ],
+        [
+          35,
+          0,
+          1
+        ],
+        [
+          35,
+          19,
+          1
+        ],
+        [
+          35,
+          0,
+          19
+        ],
+        [
+          26,
+          6,
+          5
+        ],
+        [
+          26,
+          28,
+          5
+        ],
+        [
+          26,
+          6,
+          2
+        ],
+        [
+          26,
+          32,
+          2
+        ],
+        [
+          26,
+          32,
+          28
+        ],
+        [
+          13,
+          28,
+          15
+        ],
+        [
+          13,
+          32,
+          15
+        ],
+        [
+          13,
+          32,
+          28
+        ],
+        [
+          6,
+          3,
+          5
+        ],
+        [
+          6,
+          3,
+          1
+        ],
+        [
+          6,
+          0,
+          1
+        ],
+        [
+          6,
+          0,
+          7
+        ]
+      ],
+      "volume": 2.5412,
+      "area": 10.2082
+    }
+  },
+  "created_at": "2026-09-10T05:49:10.019465+00:00",
+  "source": "procedural_normalizer"
+}

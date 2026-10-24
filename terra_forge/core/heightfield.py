@@ -12,6 +12,54 @@ if TYPE_CHECKING:
 
 
 
+def _perlin_2d(X: np.ndarray, Y: np.ndarray, freq: float, seed: int = 42) -> np.ndarray:
+    """
+    Vectorized 2D Perlin gradient noise with C2 quintic Hermite interpolation.
+    Returns array with values smoothly in [-1.0, 1.0].
+    """
+    rng = np.random.default_rng(seed)
+    gx = X * freq
+    gy = Y * freq
+    x0 = np.floor(gx).astype(np.int32)
+    x1 = x0 + 1
+    y0 = np.floor(gy).astype(np.int32)
+    y1 = y0 + 1
+    fx = gx - x0
+    fy = gy - y0
+
+    # Quintic Hermite fade curve: 6t^5 - 15t^4 + 10t^3 (C2 continuity)
+    u = fx * fx * fx * (fx * (fx * 6.0 - 15.0) + 10.0)
+    v = fy * fy * fy * (fy * (fy * 6.0 - 15.0) + 10.0)
+
+    # Gradient permutation table
+    p = np.arange(256, dtype=np.int32)
+    rng.shuffle(p)
+
+    grads = np.array([
+        [1.0, 1.0], [-1.0, 1.0], [1.0, -1.0], [-1.0, -1.0],
+        [1.0, 0.0], [-1.0, 0.0], [0.0, 1.0], [0.0, -1.0]
+    ], dtype=np.float64) / math.sqrt(2.0)
+
+    h00 = (p[x0 % 256] + y0) % 256
+    h10 = (p[x1 % 256] + y0) % 256
+    h01 = (p[x0 % 256] + y1) % 256
+    h11 = (p[x1 % 256] + y1) % 256
+
+    g00 = grads[p[h00] % 8]
+    g10 = grads[p[h10] % 8]
+    g01 = grads[p[h01] % 8]
+    g11 = grads[p[h11] % 8]
+
+    d00 = g00[:, :, 0] * fx + g00[:, :, 1] * fy
+    d10 = g10[:, :, 0] * (fx - 1.0) + g10[:, :, 1] * fy
+    d01 = g01[:, :, 0] * fx + g01[:, :, 1] * (fy - 1.0)
+    d11 = g11[:, :, 0] * (fx - 1.0) + g11[:, :, 1] * (fy - 1.0)
+
+    nx0 = (1.0 - u) * d00 + u * d10
+    nx1 = (1.0 - u) * d01 + u * d11
+    return (1.0 - v) * nx0 + v * nx1
+
+
 class Heightfield2D:
     def __init__(self, width: float = 160.0, depth: float = 160.0, resolution: int = 256):
         self.width = float(width)
@@ -108,23 +156,40 @@ class Heightfield2D:
         dist = np.sqrt(dx**2 + dy**2)
 
         if shape == "horn":
-            # Alpine Matterhorn-like sharp horn with parabolic base and steep peak
+            # Alpine Matterhorn-style pyramidal horn with radiating knife-edge aretes and glacial cirques
             norm_dist = np.clip(dist / radius, 0.0, 1.0)
-            elevation = height * (1.0 - norm_dist)**2.2
-            # Add multifractal ridges
-            angle = np.arctan2(dy, dx)
-            ridge_factor = 1.0 + 0.25 * np.cos(3.0 * angle)
-            self.Z += elevation * ridge_factor
+            base_elevation = height * ((1.0 - norm_dist) ** 2.0)
 
-        elif shape == "ridge":
-            # Linear arete / knife-edge ridge
+            angle = np.arctan2(dy, dx) - math.radians(ridge_angle_deg)
+            num_aretes = 3.0  # Trihedral Matterhorn pyramid
+
+            cos_val = np.cos(num_aretes * angle)
+            # Sharp knife-edge arete spine ribs (narrow positive crests)
+            sharp_aretes = np.maximum(0.0, cos_val) ** 0.6
+            # Glacial cirque hollows (concave scoops between aretes)
+            cirque_hollow = np.maximum(0.0, -cos_val) ** 1.2
+            cirque_envelope = (np.sin(math.pi * norm_dist) ** 1.4) * np.clip(norm_dist * 2.0, 0.0, 1.0)
+
+            elevation = base_elevation * (1.0 + 0.35 * sharp_aretes - 0.15 * cirque_hollow * cirque_envelope)
+            self.Z += np.maximum(0.0, elevation)
+
+        elif shape == "ridge" or shape == "arete":
+            # Razor knife-edge arete rock spine with transverse cusp profile
             rad = math.radians(ridge_angle_deg)
             along_ridge = dx * math.cos(rad) + dy * math.sin(rad)
             across_ridge = -dx * math.sin(rad) + dy * math.cos(rad)
+
             along_norm = np.clip(np.abs(along_ridge) / (radius * 1.5), 0.0, 1.0)
-            across_norm = np.clip(np.abs(across_ridge) / (radius * 0.4), 0.0, 1.0)
-            elevation = height * (1.0 - along_norm)**1.5 * (1.0 - across_norm)**2.0
-            self.Z += elevation
+            across_norm = np.clip(np.abs(across_ridge) / (radius * 0.35), 0.0, 1.0)
+
+            # Transverse cusp: sharp apex profile
+            transverse_profile = (1.0 - across_norm) ** 2.5
+            longitudinal_profile = (1.0 - along_norm) ** 1.8
+
+            # Secondary craggy jaggedness along spine
+            spine_jagged = 1.0 + 0.12 * np.cos(0.4 * along_ridge)
+            elevation = height * longitudinal_profile * transverse_profile * spine_jagged
+            self.Z += np.maximum(0.0, elevation)
 
         elif shape == "plateau":
             # Flat top plateau with steep talus rim
@@ -483,9 +548,15 @@ class Heightfield2D:
         """
         # 1. Tectonic Fault Scarp
         if getattr(config, "tectonic", None) and config.tectonic.enabled:
+            disp = getattr(config.tectonic, "displacement", None)
+            if disp is None:
+                disp = getattr(config.tectonic, "displacement_throw", 14.0)
+            ang = getattr(config.tectonic, "angle", None)
+            if ang is None:
+                ang = getattr(config.tectonic, "fault_angle_deg", -25.0)
             self.apply_tectonic_scarp(
-                fault_angle_deg=config.tectonic.fault_angle_deg,
-                displacement_throw=config.tectonic.displacement_throw,
+                fault_angle_deg=ang,
+                displacement_throw=disp,
                 scarp_sharpness=config.tectonic.scarp_sharpness,
                 fault_offset=config.tectonic.fault_offset,
                 fault_length=config.tectonic.fault_length,
@@ -504,12 +575,24 @@ class Heightfield2D:
             )
 
         # 3. Canyon Terracing
-        if getattr(config, "strata", None) and config.strata.terrace_enabled:
+        if getattr(config, "strata", None) and (
+            getattr(config.strata, "terrace_enabled", False)
+            or getattr(config.strata, "canyon_terracing", False)
+        ):
+            h = getattr(config.strata, "step_height", None)
+            if h is None:
+                h = getattr(config.strata, "terrace_height", 6.0)
+            k = getattr(config.strata, "steepness", None)
+            if k is None:
+                k = getattr(config.strata, "terrace_sharpness", 6.0)
+            b = getattr(config.strata, "blend", None)
+            if b is None:
+                b = getattr(config.strata, "terrace_blend", 0.85)
             self.apply_canyon_terraces(
-                terrace_height=config.strata.terrace_height,
-                terrace_sharpness=config.strata.terrace_sharpness,
-                blend=config.strata.terrace_blend,
-                noise_modulation=config.strata.noise_modulation,
+                terrace_height=h,
+                terrace_sharpness=k,
+                blend=b,
+                noise_modulation=getattr(config.strata, "noise_modulation", 0.0),
             )
 
         # 4. Coastal Profile & Wave-Cut Notches
@@ -526,4 +609,147 @@ class Heightfield2D:
                 coastline_angle_deg=config.coastal.coastline_angle_deg,
                 coastline_offset=config.coastal.coastline_offset,
             )
+
+
+    def ensure_cavern_clearance(self, config: MapConfig, min_clearance: float = 1.5) -> None:
+        """
+        Guarantees that the mountain terrain surface encloses the entire 2D elliptical
+        karst cavern chamber footprint with at least `min_clearance` rock overburden thickness.
+        Prevents subterranean breach where cavern ceiling punches through mountain flanks.
+        """
+        if not getattr(config, "cavern", None) or not config.cavern.enabled:
+            return
+        cx, cy, cz = config.cavern.center
+        rx = getattr(config.cavern, "radius_x", 0.0)
+        ry = getattr(config.cavern, "radius_y", 0.0)
+        h = getattr(config.cavern, "height", 0.0)
+        if rx <= 0.0 or ry <= 0.0 or h <= 0.0:
+            return
+
+        q = ((self.X - cx) / rx) ** 2 + ((self.Y - cy) / ry) ** 2
+        in_cavern = q <= 1.0
+        if np.any(in_cavern):
+            local_roof_z = cz + h * np.sqrt(np.maximum(0.0, 1.0 - q[in_cavern]))
+            min_surface_z = local_roof_z + min_clearance
+            self.Z[in_cavern] = np.maximum(self.Z[in_cavern], min_surface_z)
+
+    def apply_bilateral_filter(
+        self,
+        spatial_sigma: float = 2.5,
+        range_sigma: float = 1.8,
+        radius: int = 3,
+        iterations: int = 1,
+    ) -> None:
+        """
+        Applies edge-preserving bilateral surface smoothing across the heightfield.
+        Eliminates terracing, stepping artifacts, and micro-ridges on gentle slopes
+        while preserving razor-sharp aretes, horn summits, and tectonic fault scarps.
+        """
+        if iterations <= 0 or spatial_sigma <= 0.0 or range_sigma <= 0.0 or radius <= 0:
+            return
+
+        ny, nx = self.res_y, self.res_x
+        two_ssq = 2.0 * (spatial_sigma ** 2)
+        two_rsq = 2.0 * (range_sigma ** 2)
+
+        # Precompute spatial Gaussian weights for (2r+1) x (2r+1) window
+        dy_grid, dx_grid = np.ogrid[-radius:radius+1, -radius:radius+1]
+        spatial_weights = np.exp(-(dx_grid**2 + dy_grid**2) / two_ssq)
+
+        offsets = []
+        for dy in range(-radius, radius + 1):
+            for dx in range(-radius, radius + 1):
+                offsets.append((dy, dx, spatial_weights[dy + radius, dx + radius]))
+
+        y_indices, x_indices = np.indices((ny, nx))
+
+        for _ in range(iterations):
+            numerator = np.zeros_like(self.Z)
+            denominator = np.zeros_like(self.Z)
+            Z_cur = self.Z
+
+            for dy, dx, w_spatial in offsets:
+                shifted_y = np.clip(y_indices + dy, 0, ny - 1)
+                shifted_x = np.clip(x_indices + dx, 0, nx - 1)
+                Z_shifted = Z_cur[shifted_y, shifted_x]
+
+                diff = Z_shifted - Z_cur
+                w_range = np.exp(-(diff ** 2) / two_rsq)
+                w_total = w_spatial * w_range
+
+                numerator += w_total * Z_shifted
+                denominator += w_total
+
+            self.Z = numerator / np.maximum(denominator, 1e-12)
+
+    def apply_laplacian_smoothing(
+        self,
+        iterations: int = 1,
+        lambda_rate: float = 0.20,
+        anti_shrink: bool = True,
+    ) -> None:
+        """
+        Applies discrete 8-neighbor Laplacian surface relaxation.
+        When anti_shrink=True, uses Taubin two-step filtering (lambda > 0, mu < -lambda)
+        to eliminate high-frequency grid noise and single-pixel erosion spikes without volume loss.
+        """
+        if iterations <= 0 or lambda_rate <= 0.0:
+            return
+
+        ny, nx = self.res_y, self.res_x
+        y_idx, x_idx = np.indices((ny, nx))
+
+        # 8 neighbor offsets with Euclidean distance weighting
+        nbr_offsets = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
+        nbr_weights = [1.0, 1.0, 1.0, 1.0, 0.70710678, 0.70710678, 0.70710678, 0.70710678]
+        w_sum = sum(nbr_weights)
+
+        # Taubin parameters: lambda > 0, mu < 0 (balanced smoothing and anti-shrinkage)
+        mu_rate = -lambda_rate * 0.50 if anti_shrink else 0.0
+        steps = [lambda_rate, mu_rate] if anti_shrink else [lambda_rate]
+
+        for _ in range(iterations):
+            for factor in steps:
+                sum_nbrs = np.zeros_like(self.Z)
+                for (dy, dx), w in zip(nbr_offsets, nbr_weights):
+                    sy = np.clip(y_idx + dy, 0, ny - 1)
+                    sx = np.clip(x_idx + dx, 0, nx - 1)
+                    sum_nbrs += w * self.Z[sy, sx]
+
+                laplacian = (sum_nbrs / w_sum) - self.Z
+                self.Z += factor * laplacian
+
+    def add_ridged_multifractal(
+        self,
+        seed: int = 42,
+        octaves: int = 4,
+        lacunarity: float = 2.0,
+        gain: float = 0.5,
+        base_frequency: float = 0.025,
+        amplitude: float = 6.0,
+    ) -> None:
+        """
+        Synthesizes Ridged Multi-Fractal (RMF) terrain noise using C2 Perlin gradient noise.
+        Produces crisp, jagged alpine rock ribs, knife-edge aretes, and frost-shattered peaks.
+        """
+        total = np.zeros_like(self.Z)
+        cur_amp = amplitude
+        cur_freq = base_frequency
+        weight = 1.0
+
+        for i in range(octaves):
+            n = _perlin_2d(self.X, self.Y, cur_freq, seed=seed + i * 101)
+            # Inverted absolute noise gives ridge crests
+            signal = 1.0 - np.abs(n)
+            signal = signal * signal  # Sharpen ridge
+            signal *= weight
+
+            weight = np.clip(signal * 2.0, 0.0, 1.0)
+            total += signal * cur_amp
+
+            cur_freq *= lacunarity
+            cur_amp *= gain
+
+        self.Z += total
+
 

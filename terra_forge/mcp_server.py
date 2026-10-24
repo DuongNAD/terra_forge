@@ -17,6 +17,12 @@ import sys
 from pathlib import Path
 from typing import Dict, Any, Optional
 
+if sys.platform == "win32":
+    if hasattr(sys.stdin, "reconfigure"):
+        sys.stdin.reconfigure(encoding="utf-8")
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+
 PROTOCOL_VERSION = "2024-11-05"
 SERVER_INFO = {
     "name": "terraforge",

@@ -212,11 +212,12 @@ def build_inspection_camera_configs(
 
     configs = {
         "isometric_diorama": {
-            "label": "Isometric Diorama (Full Framing)",
-            "location": (iso_x, iso_y, iso_z),
+            "label": "Isometric Overview (Full Framing)",
+            "location": (-175.0, -175.0, 180.0),
             "rotation_euler": (math.radians(60.0), 0.0, math.radians(-45.0)),
-            "lens": iso_lens,
-            "clip_end": max(500.0, iso_dist * 2.5),
+            "target": (0.0, 0.0, 6.0),
+            "lens": 45.0,
+            "clip_end": 500.0,
             "dof_enabled": False,
         },
         "eye_level_first_person": {
@@ -241,23 +242,34 @@ def build_inspection_camera_configs(
         },
         "topdown": {
             "label": "Top-Down (Bird's Eye Overview)",
-            "location": (0.0, 0.0, max(width, depth) * 1.35),
+            "location": (0.0, 0.0, 250.0),
             "rotation_euler": (0.0, 0.0, 0.0),
-            "lens": 50.0,
+            "target": (0.0, 0.0, 0.0),
+            "lens": 32.0,
             "clip_end": 1000.0,
+            "dof_enabled": False,
+        },
+        "closeup_water_cavern": {
+            "label": "Close-Up Water & Karst Cavern Perspective",
+            "location": (6.0, 6.0, 15.0),
+            "rotation_euler": (math.radians(72.0), 0.0, math.radians(-30.0)),
+            "target": (-16.0, 28.0, 6.0),
+            "lens": 32.0,
+            "clip_end": 500.0,
             "dof_enabled": False,
         },
     }
 
     # Backward compatibility aliases
     configs["iso_sw"] = configs["isometric_diorama"]
-    configs["closeup_water"] = configs["closeup_macro"]
+    configs["closeup_water"] = configs["closeup_water_cavern"]
     configs["iso_ne"] = {
         "label": "Northeast Isometric",
-        "location": (-iso_x, -iso_y, iso_z),
+        "location": (175.0, 175.0, 180.0),
         "rotation_euler": (math.radians(60.0), 0.0, math.radians(135.0)),
-        "lens": iso_lens,
-        "clip_end": configs["isometric_diorama"]["clip_end"],
+        "target": (0.0, 0.0, 6.0),
+        "lens": 45.0,
+        "clip_end": 500.0,
         "dof_enabled": False,
     }
 

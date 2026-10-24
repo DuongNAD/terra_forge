@@ -1,0 +1,443 @@
+{
+  "name": "Genesis_Primordial_Wilderness",
+  "theme": "primordial_nature",
+  "seed": 1337,
+  "diorama": {
+    "width": 160.0,
+    "depth": 160.0,
+    "z_base": -16.0,
+    "resolution": 256
+  },
+  "peaks": [
+    {
+      "name": "Primordial_Horn_North",
+      "position": [
+        -25.0,
+        40.0
+      ],
+      "height": 34.0,
+      "radius": 26.0,
+      "shape": "horn",
+      "ridge_angle_deg": 0.0
+    },
+    {
+      "name": "Ancient_Ridge_East",
+      "position": [
+        36.0,
+        15.0
+      ],
+      "height": 26.0,
+      "radius": 22.0,
+      "shape": "ridge",
+      "ridge_angle_deg": 45.0
+    },
+    {
+      "name": "Basalt_Plateau_Southwest",
+      "position": [
+        -35.0,
+        -30.0
+      ],
+      "height": 20.0,
+      "radius": 20.0,
+      "shape": "plateau",
+      "ridge_angle_deg": 0.0
+    }
+  ],
+  "strata": {
+    "enabled": true,
+    "amplitude": 4.5,
+    "wavelength": 34.0,
+    "strike_angle_deg": 38.0,
+    "plunge_wavelength": 110.0,
+    "harmonic_weight": 0.28,
+    "domain_warp_amp": 6.0,
+    "domain_warp_freq": 0.045,
+    "terrace_enabled": false,
+    "terrace_height": 6.0,
+    "terrace_sharpness": 6.0,
+    "terrace_blend": 0.85,
+    "noise_modulation": 0.0
+  },
+  "tectonic": {
+    "enabled": false,
+    "fault_angle_deg": -25.0,
+    "displacement_throw": 14.0,
+    "scarp_sharpness": 10.0,
+    "fault_offset": 12.0,
+    "fault_length": 0.0
+  },
+  "coastal": {
+    "enabled": true,
+    "sea_level": 0.0,
+    "wave_notch_depth": 1.8,
+    "wave_notch_envelope": 1.2,
+    "beach_slope_coefficient": 0.12,
+    "berm_elevation": 1.2,
+    "beach_width": 16.0,
+    "shelf_transition_dist": 32.0,
+    "deep_water_depth": 10.0,
+    "coastline_angle_deg": null,
+    "coastline_offset": 0.0
+  },
+  "erosion": {
+    "enabled": true,
+    "droplet_count": 18000,
+    "droplet_inertia": 0.06,
+    "sediment_capacity_factor": 4.5,
+    "min_sediment_capacity": 0.01,
+    "erode_speed": 0.32,
+    "deposit_speed": 0.32,
+    "evaporate_speed": 0.016,
+    "gravity": 4.0,
+    "max_droplet_steps": 64,
+    "brush_radius": 3.0,
+    "alluvial_fan_spread": 3.5,
+    "rill_incision_factor": 0.5,
+    "thermal_iterations": 8,
+    "talus_angle_deg": 38.0,
+    "scree_talus_deposition": 0.4
+  },
+  "hydrology": {
+    "lake_center": [
+      -15.0,
+      -10.0
+    ],
+    "lake_radius": 22.0,
+    "lake_level": 4.5,
+    "lake_depth": 10.0,
+    "sea_level": 0.0,
+    "river_enabled": true,
+    "river_stages": [
+      {
+        "name": "Glacial Torrents",
+        "t_end": 0.35,
+        "start": [
+          -18.0,
+          38.0,
+          22.0,
+          3.5
+        ],
+        "end": [
+          -6.0,
+          18.0,
+          10.0,
+          5.0
+        ]
+      },
+      {
+        "name": "Ancient Meander",
+        "t_end": 0.65,
+        "start": [
+          -6.0,
+          18.0,
+          10.0,
+          5.0
+        ],
+        "end": [
+          -15.0,
+          4.0,
+          5.0,
+          7.0
+        ]
+      },
+      {
+        "name": "Lakeside Estuary",
+        "t_end": 1.0,
+        "start": [
+          -15.0,
+          4.0,
+          5.0,
+          7.0
+        ],
+        "end": [
+          22.0,
+          -32.0,
+          0.0,
+          10.0
+        ]
+      }
+    ],
+    "river_carve_depth": 2.2,
+    "river_meander_amplitude": 1.2,
+    "bay_enabled": true
+  },
+  "cavern": {
+    "enabled": true,
+    "center": [
+      -25.0,
+      38.0,
+      5.0
+    ],
+    "radius_x": 16.0,
+    "radius_y": 14.0,
+    "height": 10.0,
+    "entrance_pos": [
+      -15.0,
+      32.0,
+      6.0
+    ],
+    "entrance_radius": 4.5,
+    "min_roof_clearance": 6.0,
+    "stalactite_count": 18,
+    "stalagmite_count": 14,
+    "column_count": 4,
+    "subterranean_pool": true,
+    "pool_level": 4.5,
+    "bioluminescent": true,
+    "glow_color": [
+      0.1,
+      0.9,
+      0.4
+    ]
+  },
+  "biomes": [
+    {
+      "name": "ancient_highland_pines",
+      "prototype": "pine_tall",
+      "min_altitude": 6.0,
+      "max_altitude": 28.0,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 45.0,
+      "min_water_dist": 0.0,
+      "max_water_dist": 999.0,
+      "density": 0.06,
+      "poisson_dist_min": 3.0,
+      "scale_min": 0.8,
+      "scale_max": 1.3,
+      "seed": 101
+    },
+    {
+      "name": "ancient_broadleaf_grove",
+      "prototype": "broadleaf",
+      "min_altitude": 2.0,
+      "max_altitude": 18.0,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 35.0,
+      "min_water_dist": 0.0,
+      "max_water_dist": 999.0,
+      "density": 0.04,
+      "poisson_dist_min": 3.5,
+      "scale_min": 0.85,
+      "scale_max": 1.25,
+      "seed": 102
+    },
+    {
+      "name": "primeval_understory_shrubs",
+      "prototype": "shrub",
+      "min_altitude": 1.0,
+      "max_altitude": 22.0,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 42.0,
+      "min_water_dist": 0.0,
+      "max_water_dist": 999.0,
+      "density": 0.09,
+      "poisson_dist_min": 1.8,
+      "scale_min": 0.7,
+      "scale_max": 1.2,
+      "seed": 103
+    },
+    {
+      "name": "lush_prehistoric_ferns",
+      "prototype": "fern",
+      "min_altitude": 1.0,
+      "max_altitude": 16.0,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 45.0,
+      "min_water_dist": 0.0,
+      "max_water_dist": 999.0,
+      "density": 0.12,
+      "poisson_dist_min": 1.4,
+      "scale_min": 0.7,
+      "scale_max": 1.3,
+      "seed": 104
+    },
+    {
+      "name": "native_wildflower_meadow",
+      "prototype": "wildflower",
+      "min_altitude": 1.5,
+      "max_altitude": 15.0,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 28.0,
+      "min_water_dist": 0.0,
+      "max_water_dist": 999.0,
+      "density": 0.08,
+      "poisson_dist_min": 1.6,
+      "scale_min": 0.6,
+      "scale_max": 1.1,
+      "seed": 105
+    },
+    {
+      "name": "dense_riparian_grass",
+      "prototype": "grass",
+      "min_altitude": 0.5,
+      "max_altitude": 24.0,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 48.0,
+      "min_water_dist": 0.0,
+      "max_water_dist": 999.0,
+      "density": 0.16,
+      "poisson_dist_min": 1.0,
+      "scale_min": 0.6,
+      "scale_max": 1.2,
+      "seed": 106
+    },
+    {
+      "name": "fallen_mossy_nurse_logs",
+      "prototype": "fallen_log",
+      "min_altitude": 1.0,
+      "max_altitude": 18.0,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 32.0,
+      "min_water_dist": 0.0,
+      "max_water_dist": 999.0,
+      "density": 0.015,
+      "poisson_dist_min": 6.0,
+      "scale_min": 0.8,
+      "scale_max": 1.3,
+      "seed": 107
+    },
+    {
+      "name": "snapped_weathered_stumps",
+      "prototype": "snapped_stump",
+      "min_altitude": 1.0,
+      "max_altitude": 20.0,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 36.0,
+      "min_water_dist": 0.0,
+      "max_water_dist": 999.0,
+      "density": 0.012,
+      "poisson_dist_min": 7.0,
+      "scale_min": 0.7,
+      "scale_max": 1.2,
+      "seed": 108
+    },
+    {
+      "name": "forest_bracket_mushrooms",
+      "prototype": "mushroom",
+      "min_altitude": 1.0,
+      "max_altitude": 17.0,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 40.0,
+      "min_water_dist": 0.0,
+      "max_water_dist": 999.0,
+      "density": 0.07,
+      "poisson_dist_min": 2.0,
+      "scale_min": 0.6,
+      "scale_max": 1.2,
+      "seed": 109
+    },
+    {
+      "name": "cliff_hanging_moss",
+      "prototype": "rock_moss",
+      "min_altitude": 2.0,
+      "max_altitude": 30.0,
+      "min_slope_deg": 20.0,
+      "max_slope_deg": 75.0,
+      "min_water_dist": 0.0,
+      "max_water_dist": 999.0,
+      "density": 0.1,
+      "poisson_dist_min": 1.8,
+      "scale_min": 0.8,
+      "scale_max": 1.4,
+      "seed": 110
+    },
+    {
+      "name": "geological_talus_boulders",
+      "prototype": "boulder",
+      "min_altitude": 2.5,
+      "max_altitude": 32.0,
+      "min_slope_deg": 15.0,
+      "max_slope_deg": 55.0,
+      "min_water_dist": 0.0,
+      "max_water_dist": 999.0,
+      "density": 0.035,
+      "poisson_dist_min": 4.5,
+      "scale_min": 0.7,
+      "scale_max": 1.4,
+      "seed": 111
+    },
+    {
+      "name": "wetland_shoreline_reeds",
+      "prototype": "reeds",
+      "min_altitude": 3.5,
+      "max_altitude": 5.5,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 22.0,
+      "min_water_dist": 0.0,
+      "max_water_dist": 999.0,
+      "density": 0.14,
+      "poisson_dist_min": 1.2,
+      "scale_min": 0.8,
+      "scale_max": 1.3,
+      "seed": 112
+    },
+    {
+      "name": "submerged_aquatic_waterweeds",
+      "prototype": "seaweed",
+      "min_altitude": -6.0,
+      "max_altitude": 4.0,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 30.0,
+      "min_water_dist": 0.0,
+      "max_water_dist": 999.0,
+      "density": 0.1,
+      "poisson_dist_min": 1.5,
+      "scale_min": 0.7,
+      "scale_max": 1.3,
+      "seed": 113
+    },
+    {
+      "name": "fluvial_riverbed_pebbles",
+      "prototype": "river_pebbles",
+      "min_altitude": 1.0,
+      "max_altitude": 10.0,
+      "min_slope_deg": 0.0,
+      "max_slope_deg": 25.0,
+      "min_water_dist": 0.0,
+      "max_water_dist": 999.0,
+      "density": 0.18,
+      "poisson_dist_min": 1.0,
+      "scale_min": 0.6,
+      "scale_max": 1.2,
+      "seed": 114
+    }
+  ],
+  "shaders": {
+    "triplanar": true,
+    "rock_texture": "cliff_rock",
+    "soil_texture": "forest_ground",
+    "sand_texture": "wet_sand",
+    "snow_altitude": 24.0,
+    "water_absorption_color": [
+      0.04,
+      0.44,
+      0.62
+    ],
+    "water_roughness": 0.035,
+    "water_contact_foam": true
+  },
+  "atmosphere": {
+    "enabled": true,
+    "sun_time_of_day": 16.5,
+    "max_elevation_deg": 42.0,
+    "sun_intensity_max": 4.2,
+    "optical_depth": 0.12,
+    "mist_density": 0.0018,
+    "mist_anisotropy": 0.72,
+    "mist_absorption_color": [
+      0.8,
+      0.88,
+      0.96
+    ],
+    "use_volumetrics": true,
+    "use_mist_pass": true
+  },
+  "export": {
+    "export_glb": true,
+    "export_blend": true,
+    "export_heightmap_json": true,
+    "glb_path": "e:/Project/01_AI_Agents/Genesis_Zero/assets/blender_map/ecosystem_map.glb",
+    "blend_path": "e:/Project/01_AI_Agents/Genesis_Zero/assets/blender_map/ecosystem_map.blend",
+    "heightmap_path": "e:/Project/01_AI_Agents/Genesis_Zero/assets/blender_map/simulation_heightmap.json"
+  }
+}

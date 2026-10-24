@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "updated_at": "2026-09-10T13:12:43.687183+00:00",
+  "asset_count": 11,
+  "assets": {
+    "01575dba8c2d3ae1ebb6651b1366380813e98958c505525be043f0b2cb281999": {
+      "prompt": "ancient gnarled primordial pine tree with deep bark textures and sprawling roots",
+      "seed": 1337,
+      "flora_type": 0,
+      "abiotic_type": null,
+      "created_at": "2026-09-10T04:59:39.359546+00:00"
+    },
+    "087921ace890b7b15b505ecef0196eb55de2c467c04d14147c9da24788a6c5ca": {
+      "prompt": "alluvial riparian sandbank sediment bar, natural river berm, fine alluvial quartz sand deposit, gentle fluvial current ripple marks, water-sculpted river silt shelf, sterile mineral shoreline deposit, cinematic lighting, untouched primordial abiotic wilderness",
+      "seed": 42,
+      "flora_type": null,
+      "abiotic_type": 4,
+      "created_at": "2026-09-10T05:49:06.961745+00:00"
+    },
+    "118de17ce9a1172261d0f956500e340358421024fb14ef8afca07f68a9927854": {
+      "prompt": "primordial jagged horn peak, massive granite crag, glacially sheared arete, sharp bedrock fault lines, frost-weathered rock face, sterile abiotic geology, sheer pyramidal alpine summit, high-elevation exposed strata, cinematic lighting, untouched primordial abiotic wilderness",
+      "seed": 42,
+      "flora_type": null,
+      "abiotic_type": 0,
+      "created_at": "2026-09-10T05:49:03.924371+00:00"
+    },
+    "2870b4ce431d34d3b6d5a7768353ba3a80d55feb61eb99e1c0bcf2d85d507ed8": {
+      "prompt": "massive fused cavern column pillar, grand limestone speleothem spanning floor to ceiling, fluted calcified flowstone pillar, subterranean geological column, ancient banded limestone pillar, cinematic lighting, untouched primordial abiotic wilderness",
+      "seed": 42,
+      "flora_type": null,
+      "abiotic_type": 7,
+      "created_at": "2026-09-10T05:49:09.255437+00:00"
+    },
+    "5599b30916d3c4d8b330edef568f447f710a558ae2dfc166a6ba2173ec405e47": {
+      "prompt": "subterranean limestone stalactite, conical calcite speleothem, mineral dripstone with crystalline texture, dripping cavern ceiling rock, natural calcified mineral deposition, fluted speleothem formation, cinematic lighting, untouched primordial abiotic wilderness",
+      "seed": 42,
+      "flora_type": null,
+      "abiotic_type": 5,
+      "created_at": "2026-09-10T13:12:43.675911+00:00"
+    },
+    "68066f76b4b837f47dae7c2d3a542b06ccf168a9c7841d66c14c0ee83e747f6c": {
+      "prompt": "natural rocky karst arch cavern entrance, rugged eroded limestone rock opening, subterranean cave portal, ancient weathered geological archway, sterile abiotic karst stone, rough porous limestone cliff cavity, cinematic lighting, untouched primordial abiotic wilderness",
+      "seed": 42,
+      "flora_type": null,
+      "abiotic_type": 9,
+      "created_at": "2026-09-10T13:12:43.679554+00:00"
+    },
+    "7dc3733a3731c2d68b4dbd9cfedf7d0894267d05499f98cbaa84a58aee2e2c82": {
+      "prompt": "massive weathered granite rock crag, sheer vertical bedrock cliff face, tectonic jointing fissures, rugged alpine bedrock outcrop, sterile abiotic stone, ancient natural geological fracture planes, rough mineral surface, cinematic lighting, untouched primordial abiotic wilderness",
+      "seed": 42,
+      "flora_type": null,
+      "abiotic_type": 1,
+      "created_at": "2026-09-10T13:12:43.682668+00:00"
+    },
+    "94394768403806a71abfa5186eef1fa6e8c7a2a1c6d20eb2500fe4b1830df9a3": {
+      "prompt": "cluster of water-worn riverbed pebbles, smooth oblate quartzite stones, fluvial rounded gravel deposit, eroded river cobbles, polished wet mineral surface, natural stream bed sediment deposit, cinematic lighting, untouched primordial abiotic wilderness",
+      "seed": 42,
+      "flora_type": null,
+      "abiotic_type": 3,
+      "created_at": "2026-09-10T13:12:43.686184+00:00"
+    },
+    "a97e760a919f595ff38867c7d8ededa7844317fe5512403cbedbc782c75e9d7c": {
+      "prompt": "subterranean calcite stalagmite, conical floor-rising mineral mound, convex layered calcite speleothem, cavern floor mineral deposit, wet crystalline stone, stepped calcite drip mound, cinematic lighting, untouched primordial abiotic wilderness",
+      "seed": 42,
+      "flora_type": null,
+      "abiotic_type": 6,
+      "created_at": "2026-09-10T05:49:08.501126+00:00"
+    },
+    "dbe91347b91e0cbb8701b4550f1ac5b076c5693df4af00a7e52f415e99e4f8ae": {
+      "prompt": "cluster of glowing cavern mineral crystals, crystalline fluorite calcite druse, phosphorescent geological formation, emissive cyan crystal cluster, raw mineral specimen, faceted crystal geode, mineral crust, cinematic lighting, untouched primordial abiotic wilderness",
+      "seed": 42,
+      "flora_type": null,
+      "abiotic_type": 8,
+      "created_at": "2026-09-10T05:49:10.019465+00:00"
+    },
+    "f234006e35f37e62e895754e150fdba5f9955bbfc68d802c1941829f5b616e81": {
+      "prompt": "geometric columnar basalt cluster, volcanic columnar jointing, polygonal prismatic hexagonal pentagonal rock pillars, dark tholeiitic basalt texture, fractured igneous cooling joints, stepped terrace escarpment, sterile geology, cinematic lighting, untouched primordial abiotic wilderness",
+      "seed": 42,
+      "flora_type": null,
+      "abiotic_type": 2,
+      "created_at": "2026-09-10T05:49:05.427185+00:00"
+    }
+  }
+}

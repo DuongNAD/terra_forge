@@ -1,0 +1,208 @@
+{
+  "name": "Genesis Primordial Abiotic Geosphere",
+  "theme": "primordial_abiotic",
+  "seed": 1337,
+  "diorama": {
+    "width": 160.0,
+    "depth": 160.0,
+    "z_base": -16.0,
+    "resolution": 256
+  },
+  "peaks": [
+    {
+      "name": "Horn_Peak_Alpine_Arete",
+      "position": [
+        -25.0,
+        40.0
+      ],
+      "height": 34.0,
+      "radius": 26.0,
+      "shape": "horn",
+      "ridge_angle_deg": 0.0
+    },
+    {
+      "name": "Ancient_Fault_Ridge",
+      "position": [
+        36.0,
+        15.0
+      ],
+      "height": 26.0,
+      "radius": 22.0,
+      "shape": "ridge",
+      "ridge_angle_deg": 45.0
+    },
+    {
+      "name": "Stepped_Basalt_Plateau",
+      "position": [
+        -35.0,
+        -30.0
+      ],
+      "height": 20.0,
+      "radius": 20.0,
+      "shape": "plateau",
+      "ridge_angle_deg": 0.0
+    }
+  ],
+  "strata": {
+    "enabled": true,
+    "amplitude": 4.5,
+    "wavelength": 34.0,
+    "strike_angle_deg": 38.0,
+    "plunge_wavelength": 110.0,
+    "harmonic_weight": 0.28,
+    "domain_warp_amp": 6.0,
+    "domain_warp_freq": 0.045,
+    "terrace_enabled": false,
+    "terrace_height": 5.0,
+    "terrace_sharpness": 6.0,
+    "terrace_blend": 0.0,
+    "noise_modulation": 0.0
+  },
+  "tectonic": {
+    "enabled": true,
+    "fault_angle_deg": 25.0,
+    "displacement_throw": 4.0,
+    "scarp_sharpness": 10.0,
+    "fault_offset": 12.0,
+    "fault_length": 0.0
+  },
+  "coastal": {
+    "enabled": true,
+    "sea_level": 0.0,
+    "wave_notch_depth": 1.8,
+    "wave_notch_envelope": 1.2,
+    "beach_slope_coefficient": 0.12,
+    "berm_elevation": 1.2,
+    "beach_width": 16.0,
+    "shelf_transition_dist": 32.0,
+    "deep_water_depth": 10.0,
+    "coastline_angle_deg": null,
+    "coastline_offset": 0.0
+  },
+  "erosion": {
+    "enabled": true,
+    "droplet_count": 20000,
+    "droplet_inertia": 0.06,
+    "sediment_capacity_factor": 4.5,
+    "min_sediment_capacity": 0.01,
+    "erode_speed": 0.32,
+    "deposit_speed": 0.32,
+    "evaporate_speed": 0.016,
+    "gravity": 4.0,
+    "max_droplet_steps": 64,
+    "brush_radius": 3.0,
+    "alluvial_fan_spread": 3.5,
+    "rill_incision_factor": 0.5,
+    "thermal_iterations": 24,
+    "talus_angle_deg": 33.0,
+    "scree_talus_deposition": 0.4
+  },
+  "hydrology": {
+    "lake_center": [
+      -15.0,
+      -10.0
+    ],
+    "lake_radius": 22.0,
+    "lake_level": 4.5,
+    "lake_depth": 10.0,
+    "sea_level": 0.0,
+    "river_enabled": true,
+    "river_stages": [
+      {
+        "name": "Mountain Cascades",
+        "t_end": 0.32,
+        "start": [-8.0, 48.0, 21.5, 3.2],
+        "end": [0.0, 26.0, 8.0, 4.5]
+      },
+      {
+        "name": "Valley Meander",
+        "t_end": 0.58,
+        "start": [0.0, 26.0, 8.0, 4.5],
+        "end": [-18.0, 6.0, 4.5, 7.5]
+      },
+      {
+        "name": "Central Lake Transit",
+        "t_end": 0.74,
+        "start": [-18.0, 6.0, 4.5, 7.5],
+        "end": [-10.0, -18.0, 4.5, 8.0]
+      },
+      {
+        "name": "Outlet Gorge & Bay",
+        "t_end": 1.0,
+        "start": [-10.0, -18.0, 4.5, 8.0],
+        "end": [26.0, -36.0, 0.0, 10.0]
+      }
+    ],
+    "river_carve_depth": 2.2,
+    "river_meander_amplitude": 1.2,
+    "bay_enabled": true
+  },
+  "cavern": {
+    "enabled": true,
+    "center": [
+      -25.0,
+      38.0,
+      2.0
+    ],
+    "radius_x": 12.0,
+    "radius_y": 10.0,
+    "height": 7.5,
+    "entrance_pos": [
+      -15.0,
+      32.0,
+      6.0
+    ],
+    "entrance_radius": 4.5,
+    "min_roof_clearance": 6.0,
+    "stalactite_count": 18,
+    "stalagmite_count": 14,
+    "column_count": 4,
+    "subterranean_pool": true,
+    "pool_level": 4.5,
+    "bioluminescent": true,
+    "glow_color": [
+      0.1,
+      0.9,
+      0.4
+    ]
+  },
+  "biomes": [],
+  "shaders": {
+    "triplanar": true,
+    "rock_texture": "cliff_rock",
+    "soil_texture": "forest_ground",
+    "sand_texture": "wet_sand",
+    "snow_altitude": 24.0,
+    "water_absorption_color": [
+      0.04,
+      0.44,
+      0.62
+    ],
+    "water_roughness": 0.035,
+    "water_contact_foam": true
+  },
+  "atmosphere": {
+    "enabled": true,
+    "sun_time_of_day": 16.5,
+    "max_elevation_deg": 42.0,
+    "sun_intensity_max": 4.2,
+    "optical_depth": 0.12,
+    "mist_density": 0.0018,
+    "mist_anisotropy": 0.72,
+    "mist_absorption_color": [
+      0.8,
+      0.88,
+      0.96
+    ],
+    "use_volumetrics": true,
+    "use_mist_pass": true
+  },
+  "export": {
+    "export_glb": true,
+    "export_blend": true,
+    "export_heightmap_json": true,
+    "glb_path": "e:/Project/01_AI_Agents/Genesis_Zero/assets/blender_map/ecosystem_map.glb",
+    "blend_path": "e:/Project/01_AI_Agents/Genesis_Zero/assets/blender_map/ecosystem_map.blend",
+    "heightmap_path": "e:/Project/01_AI_Agents/Genesis_Zero/assets/blender_map/simulation_heightmap.json"
+  }
+}

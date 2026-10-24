@@ -7,7 +7,12 @@ Procedural & PBR Shaders for TerraForge in Blender:
 
 from __future__ import annotations
 
-import bpy
+try:
+    import bpy
+    HAS_BPY = True
+except ImportError:
+    bpy = None
+    HAS_BPY = False
 
 from terra_forge.schema.map_config import ShaderConfig
 
@@ -42,6 +47,9 @@ def create_triplanar_terrain_shader(config: ShaderConfig) -> bpy.types.Material:
     - Multi-scale procedural noise boundary perturbation eliminating laser-straight contours and UV stretching.
     - Strata vertex color (COLOR_0) geological multi-layering.
     """
+    if not HAS_BPY or bpy is None:
+        return None
+
     mat_name = "MAT_TerraForge_Terrain_Triplanar"
     mat = bpy.data.materials.get(mat_name)
     if mat is None:
@@ -106,6 +114,37 @@ def create_triplanar_terrain_shader(config: ShaderConfig) -> bpy.types.Material:
     pow_z.inputs[1].default_value = 6.0
     links.new(abs_z.outputs["Value"], pow_z.inputs[0])
 
+    # Normalization: sum = pow_x + pow_y + pow_z
+    sum_xy = nodes.new(type="ShaderNodeMath")
+    sum_xy.location = (-750, 525)
+    sum_xy.operation = "ADD"
+    links.new(pow_x.outputs["Value"], sum_xy.inputs[0])
+    links.new(pow_y.outputs["Value"], sum_xy.inputs[1])
+
+    sum_xyz = nodes.new(type="ShaderNodeMath")
+    sum_xyz.location = (-600, 450)
+    sum_xyz.operation = "ADD"
+    links.new(sum_xy.outputs["Value"], sum_xyz.inputs[0])
+    links.new(pow_z.outputs["Value"], sum_xyz.inputs[1])
+
+    weight_x = nodes.new(type="ShaderNodeMath")
+    weight_x.location = (-400, 600)
+    weight_x.operation = "DIVIDE"
+    links.new(pow_x.outputs["Value"], weight_x.inputs[0])
+    links.new(sum_xyz.outputs["Value"], weight_x.inputs[1])
+
+    weight_y = nodes.new(type="ShaderNodeMath")
+    weight_y.location = (-400, 450)
+    weight_y.operation = "DIVIDE"
+    links.new(pow_y.outputs["Value"], weight_y.inputs[0])
+    links.new(sum_xyz.outputs["Value"], weight_y.inputs[1])
+
+    weight_z = nodes.new(type="ShaderNodeMath")
+    weight_z.location = (-400, 300)
+    weight_z.operation = "DIVIDE"
+    links.new(pow_z.outputs["Value"], weight_z.inputs[0])
+    links.new(sum_xyz.outputs["Value"], weight_z.inputs[1])
+
     # Procedural Noise Perturbation (Anti-Contour Masking & Anti-Tiling)
     noise_coarse = nodes.new(type="ShaderNodeTexNoise")
     noise_coarse.location = (-1350, 150)
@@ -150,22 +189,29 @@ def create_triplanar_terrain_shader(config: ShaderConfig) -> bpy.types.Material:
     links.new(snow_alt_range.outputs["Result"], snow_weight.inputs[0])
     links.new(snow_slope_ramp.outputs["Color"], snow_weight.inputs[1])
 
-    # 2. Cliff Bedrock Mask (Steep rock scarp)
+    # 2. Cliff Bedrock Mask (Steep rock scarp: slope > 30 deg, cos(30 deg) ≈ 0.866)
     cliff_slope_ramp = nodes.new(type="ShaderNodeValToRGB")
     cliff_slope_ramp.location = (-550, 300)
-    cliff_slope_ramp.color_ramp.elements[0].position = 0.55  # Cliff rock
-    cliff_slope_ramp.color_ramp.elements[1].position = 0.82  # Transition to gentle
+    cliff_slope_ramp.color_ramp.elements[0].position = 0.55  # Steep cliff rock
+    cliff_slope_ramp.color_ramp.elements[1].position = 0.866 # 30 deg slope threshold
     links.new(add_slope_pert.outputs["Value"], cliff_slope_ramp.inputs["Fac"])
 
-    # 3. Scree / Talus Mask (Modulated by hf.scree_talus attribute)
+    # 3. Scree / Talus Mask (Intermediate slopes & modulated by hf.scree_talus attribute)
     attr_scree = nodes.new(type="ShaderNodeAttribute")
     attr_scree.location = (-550, 550)
     attr_scree.attribute_name = "scree_talus"
 
     scree_slope_ramp = nodes.new(type="ShaderNodeValToRGB")
     scree_slope_ramp.location = (-300, 450)
-    scree_slope_ramp.color_ramp.elements[0].position = 0.60
-    scree_slope_ramp.color_ramp.elements[1].position = 0.82
+    scree_ramp = scree_slope_ramp.color_ramp
+    scree_ramp.elements[0].position = 0.55
+    scree_ramp.elements[0].color = (0.0, 0.0, 0.0, 1.0)
+    scree_ramp.elements[1].position = 0.94
+    scree_ramp.elements[1].color = (0.0, 0.0, 0.0, 1.0)
+    e_mid1 = scree_ramp.elements.new(0.70)
+    e_mid1.color = (1.0, 1.0, 1.0, 1.0)
+    e_mid2 = scree_ramp.elements.new(0.866)
+    e_mid2.color = (1.0, 1.0, 1.0, 1.0)
     links.new(add_slope_pert.outputs["Value"], scree_slope_ramp.inputs["Fac"])
 
     scree_combine = nodes.new(type="ShaderNodeMath")
@@ -269,29 +315,142 @@ def create_triplanar_terrain_shader(config: ShaderConfig) -> bpy.types.Material:
     links.new(out_vc, bsdf.inputs["Base Color"])
 
     # --- PBR ROUGHNESS & NORMAL BUMP ---
-    # Dynamic Roughness: Rock=0.85, Scree=0.90, Sand=0.60, Snow=0.30, Damp Soil=0.50
-    mix_rough = nodes.new(type="ShaderNodeMix")
-    mix_rough.location = (1300, -150)
-    mix_rough.data_type = "FLOAT"
-    f_ro, a_ro, b_ro, out_ro = _get_mix_float_sockets(mix_rough)
-    links.new(snow_weight.outputs["Value"], f_ro)
-    a_ro.default_value = 0.78
-    b_ro.default_value = 0.30
-    links.new(out_ro, bsdf.inputs["Roughness"])
+    # Dynamic 5-Class PBR Roughness:
+    # 1. Cliff Bedrock: 0.85
+    # 2. Scree & Talus: 0.90
+    # 3. Humus Soil & Valley Moss: 0.50 - 0.70 (moisture modulated)
+    # 4. Coastal & River Sand: 0.60
+    # 5. Alpine Snow: 0.30
 
-    # Procedural Normal Bump (Rock Strata & Gravel Grain)
-    tex_bump_noise = nodes.new(type="ShaderNodeTexNoise")
-    tex_bump_noise.location = (1050, -350)
-    tex_bump_noise.inputs["Scale"].default_value = 6.0
-    tex_bump_noise.inputs["Detail"].default_value = 5.0
-    tex_bump_noise.inputs["Roughness"].default_value = 0.6
-    links.new(geom.outputs["Position"], tex_bump_noise.inputs["Vector"])
+    # Step 1: Soil Roughness (Loam 0.70 -> Damp Moss 0.50 via moisture)
+    mix_soil_rough = nodes.new(type="ShaderNodeMix")
+    mix_soil_rough.location = (0, -150)
+    mix_soil_rough.data_type = "FLOAT"
+    f_sor, a_sor, b_sor, out_sor = _get_mix_float_sockets(mix_soil_rough)
+    links.new(attr_moist.outputs["Fac"], f_sor)
+    a_sor.default_value = 0.70  # Rich dark loam
+    b_sor.default_value = 0.50  # Lush damp moss
+
+    # Step 2: Cliff Bedrock (0.85) vs Modulated Soil
+    mix_rock_soil_rough = nodes.new(type="ShaderNodeMix")
+    mix_rock_soil_rough.location = (450, -150)
+    mix_rock_soil_rough.data_type = "FLOAT"
+    f_rsr, a_rsr, b_rsr, out_rsr = _get_mix_float_sockets(mix_rock_soil_rough)
+    links.new(cliff_slope_ramp.outputs["Color"], f_rsr)
+    a_rsr.default_value = 0.85  # Cliff Bedrock (dark fractured granite/slate)
+    links.new(out_sor, b_rsr)
+
+    # Step 3: Scree & Talus (0.90)
+    mix_scree_rough = nodes.new(type="ShaderNodeMix")
+    mix_scree_rough.location = (650, -150)
+    mix_scree_rough.data_type = "FLOAT"
+    f_scr, a_scr, b_scr, out_scr = _get_mix_float_sockets(mix_scree_rough)
+    links.new(scree_combine.outputs["Value"], f_scr)
+    links.new(out_rsr, a_scr)
+    b_scr.default_value = 0.90  # Scree & Talus (angular gravel/pebbles)
+
+    # Step 4: Coastal & River Sand (0.60)
+    mix_sand_rough = nodes.new(type="ShaderNodeMix")
+    mix_sand_rough.location = (850, -150)
+    mix_sand_rough.data_type = "FLOAT"
+    f_sar, a_sar, b_sar, out_sar = _get_mix_float_sockets(mix_sand_rough)
+    links.new(sand_weight.outputs["Value"], f_sar)
+    links.new(out_scr, a_sar)
+    b_sar.default_value = 0.60  # Coastal & River Sand (quartz sand)
+
+    # Step 5: Alpine Snow (0.30)
+    mix_snow_rough = nodes.new(type="ShaderNodeMix")
+    mix_snow_rough.location = (1050, -150)
+    mix_snow_rough.data_type = "FLOAT"
+    f_snr, a_snr, b_snr, out_snr = _get_mix_float_sockets(mix_snow_rough)
+    links.new(snow_weight.outputs["Value"], f_snr)
+    links.new(out_sar, a_snr)
+    b_snr.default_value = 0.30  # Alpine Snow (crystalline snow)
+
+    links.new(out_snr, bsdf.inputs["Roughness"])
+
+    # Triplanar Procedural Normal Bump (Rock Strata & Gravel Grain)
+    # Orthogonal planar coordinate projections eliminating cliff/wall stretching:
+    # Plane X (YZ projection for steep East-West cliff scarps)
+    proj_x = nodes.new(type="ShaderNodeCombineXYZ")
+    proj_x.location = (100, -500)
+    links.new(sep_pos.outputs["Y"], proj_x.inputs["X"])
+    links.new(sep_pos.outputs["Z"], proj_x.inputs["Y"])
+    proj_x.inputs["Z"].default_value = 0.0
+
+    # Plane Y (XZ projection for steep North-South cliff scarps)
+    proj_y = nodes.new(type="ShaderNodeCombineXYZ")
+    proj_y.location = (100, -650)
+    links.new(sep_pos.outputs["X"], proj_y.inputs["X"])
+    links.new(sep_pos.outputs["Z"], proj_y.inputs["Y"])
+    proj_y.inputs["Z"].default_value = 0.0
+
+    # Plane Z (XY projection for horizontal flats and valley floor)
+    proj_z = nodes.new(type="ShaderNodeCombineXYZ")
+    proj_z.location = (100, -800)
+    links.new(sep_pos.outputs["X"], proj_z.inputs["X"])
+    links.new(sep_pos.outputs["Y"], proj_z.inputs["Y"])
+    proj_z.inputs["Z"].default_value = 0.0
+
+    # Micro-bump procedural noise sampled along each orthogonal plane
+    noise_bump_x = nodes.new(type="ShaderNodeTexNoise")
+    noise_bump_x.location = (350, -500)
+    noise_bump_x.inputs["Scale"].default_value = 6.0
+    noise_bump_x.inputs["Detail"].default_value = 5.0
+    noise_bump_x.inputs["Roughness"].default_value = 0.6
+    links.new(proj_x.outputs["Vector"], noise_bump_x.inputs["Vector"])
+
+    noise_bump_y = nodes.new(type="ShaderNodeTexNoise")
+    noise_bump_y.location = (350, -650)
+    noise_bump_y.inputs["Scale"].default_value = 6.0
+    noise_bump_y.inputs["Detail"].default_value = 5.0
+    noise_bump_y.inputs["Roughness"].default_value = 0.6
+    links.new(proj_y.outputs["Vector"], noise_bump_y.inputs["Vector"])
+
+    noise_bump_z = nodes.new(type="ShaderNodeTexNoise")
+    noise_bump_z.location = (350, -800)
+    noise_bump_z.inputs["Scale"].default_value = 6.0
+    noise_bump_z.inputs["Detail"].default_value = 5.0
+    noise_bump_z.inputs["Roughness"].default_value = 0.6
+    links.new(proj_z.outputs["Vector"], noise_bump_z.inputs["Vector"])
+
+    # Weight planar noise projections by normalized normal-exponent triplanar weights
+    mult_bump_x = nodes.new(type="ShaderNodeMath")
+    mult_bump_x.location = (650, -500)
+    mult_bump_x.operation = "MULTIPLY"
+    links.new(noise_bump_x.outputs["Fac"], mult_bump_x.inputs[0])
+    links.new(weight_x.outputs["Value"], mult_bump_x.inputs[1])
+
+    mult_bump_y = nodes.new(type="ShaderNodeMath")
+    mult_bump_y.location = (650, -650)
+    mult_bump_y.operation = "MULTIPLY"
+    links.new(noise_bump_y.outputs["Fac"], mult_bump_y.inputs[0])
+    links.new(weight_y.outputs["Value"], mult_bump_y.inputs[1])
+
+    mult_bump_z = nodes.new(type="ShaderNodeMath")
+    mult_bump_z.location = (650, -800)
+    mult_bump_z.operation = "MULTIPLY"
+    links.new(noise_bump_z.outputs["Fac"], mult_bump_z.inputs[0])
+    links.new(weight_z.outputs["Value"], mult_bump_z.inputs[1])
+
+    # Accumulate triplanar weighted samples: triplanar_h = bump_x*w_x + bump_y*w_y + bump_z*w_z
+    add_bump_xy = nodes.new(type="ShaderNodeMath")
+    add_bump_xy.location = (900, -575)
+    add_bump_xy.operation = "ADD"
+    links.new(mult_bump_x.outputs["Value"], add_bump_xy.inputs[0])
+    links.new(mult_bump_y.outputs["Value"], add_bump_xy.inputs[1])
+
+    add_bump_xyz = nodes.new(type="ShaderNodeMath")
+    add_bump_xyz.location = (1100, -650)
+    add_bump_xyz.operation = "ADD"
+    links.new(add_bump_xy.outputs["Value"], add_bump_xyz.inputs[0])
+    links.new(mult_bump_z.outputs["Value"], add_bump_xyz.inputs[1])
 
     bump_terrain = nodes.new(type="ShaderNodeBump")
     bump_terrain.location = (1350, -350)
     bump_terrain.inputs["Strength"].default_value = 0.12
     bump_terrain.inputs["Distance"].default_value = 0.20
-    links.new(tex_bump_noise.outputs["Fac"], bump_terrain.inputs["Height"])
+    links.new(add_bump_xyz.outputs["Value"], bump_terrain.inputs["Height"])
     links.new(bump_terrain.outputs["Normal"], bsdf.inputs["Normal"])
 
     return mat
@@ -299,12 +458,15 @@ def create_triplanar_terrain_shader(config: ShaderConfig) -> bpy.types.Material:
 
 def create_water_shader(config: ShaderConfig) -> bpy.types.Material:
     """
-    Constructs an advanced physical water material:
-    - Deep volume absorption (Beer-Lambert optical attenuation: I = I_0 * exp(-alpha * d))
-    - Specular surface transmission and Fresnel reflection
-    - Shoreline contact foam margin gradient
-    - Procedural wave normal bump perturbation
+    Constructs an advanced physical optical water material for Blender 4.5.4 LTS (EEVEE Next & Cycles):
+    - Beer-Lambert depth color attenuation (emerald shallow to deep sapphire via LightPath Ray Length)
+    - Shoreline contact foam margin thresholded (< 1.0m) by water depth / ray distance
+    - Dual-scale procedural wave normal bump perturbation
+    - EEVEE Next real-time transparency (mat.surface_render_method = 'BLENDED')
     """
+    if not HAS_BPY or bpy is None:
+        return None
+
     mat_name = "MAT_TerraForge_Water_Deep"
     mat = bpy.data.materials.get(mat_name)
     if mat is None:
@@ -315,85 +477,116 @@ def create_water_shader(config: ShaderConfig) -> bpy.types.Material:
     links = mat.node_tree.links
     nodes.clear()
 
-    # Material Output
+    # Material Output & Surface BSDF
     node_out = nodes.new(type="ShaderNodeOutputMaterial")
-    node_out.location = (1200, 0)
+    node_out.location = (1400, 0)
 
-    # Principled BSDF Surface
     bsdf = nodes.new(type="ShaderNodeBsdfPrincipled")
-    bsdf.location = (900, 100)
+    bsdf.location = (1100, 100)
     links.new(bsdf.outputs["BSDF"], node_out.inputs["Surface"])
 
     # Optical Beer-Lambert Volume Absorption (retained for node compatibility; not connected to open surface output)
     vol_absorp = nodes.new(type="ShaderNodeVolumeAbsorption")
-    vol_absorp.location = (900, -200)
+    vol_absorp.location = (1100, -200)
     absorp = config.water_absorption_color
     vol_absorp.inputs["Color"].default_value = (absorp[0], absorp[1], absorp[2], 1.0)
     vol_absorp.inputs["Density"].default_value = 0.45
-    # NOTE: Connecting Volume output to non-closed/open ribbon meshes causes ray-march extinction (pitch black) in Blender 5.2 EEVEE-Next.
-    # Surface BSDF transmission handles physical optics cleanly without black shading artifacts.
 
-    # Water Surface Parameters
-    water_base_color = (absorp[0] * 0.75, absorp[1] * 0.90, absorp[2] * 0.98, 1.0)
-    bsdf.inputs["Roughness"].default_value = max(0.02, config.water_roughness)
-    bsdf.inputs["IOR"].default_value = 1.333
+    # 1. Beer-Lambert Optical Attenuation via LightPath Ray Length
+    lp = nodes.new(type="ShaderNodeLightPath")
+    lp.location = (-600, 200)
 
-    if "Transmission Weight" in bsdf.inputs:
-        bsdf.inputs["Transmission Weight"].default_value = 0.88
-    elif "Transmission" in bsdf.inputs:
-        bsdf.inputs["Transmission"].default_value = 0.88
-    if "Alpha" in bsdf.inputs:
-        bsdf.inputs["Alpha"].default_value = 0.92
+    ray_mult = nodes.new(type="ShaderNodeMath")
+    ray_mult.location = (-350, 250)
+    ray_mult.operation = "MULTIPLY"
+    ray_mult.inputs[1].default_value = -0.45
+    links.new(lp.outputs["Ray Length"], ray_mult.inputs[0])
 
-    # Procedural Shoreline Contact Foam Band Gradient
+    ray_exp = nodes.new(type="ShaderNodeMath")
+    ray_exp.location = (-150, 250)
+    ray_exp.operation = "EXPONENT"
+    links.new(ray_mult.outputs["Value"], ray_exp.inputs[0])
+
+    # Depth gradient: exp(-alpha*d) -> 1 at surface (emerald), -> 0 at depth (deep sapphire)
+    mix_depth = nodes.new(type="ShaderNodeMix")
+    mix_depth.location = (100, 250)
+    mix_depth.data_type = "RGBA"
+    f_d, a_d, b_d, out_d = _get_mix_rgba_sockets(mix_depth)
+    links.new(ray_exp.outputs["Value"], f_d)
+    # Socket A (exp=0, deep water): deep sapphire blue
+    a_d.default_value = (0.02, 0.08, 0.35, 1.0)
+    # Socket B (exp=1, shallow water): emerald turquoise
+    b_d.default_value = (0.15, 0.65, 0.70, 1.0)
+
+    # 2. Shoreline Contact Foam Margin: Ray Length thresholded near geometry contact (< 1.0m)
+    foam_range = nodes.new(type="ShaderNodeMapRange")
+    foam_range.location = (-150, 50)
+    foam_range.inputs["From Min"].default_value = 0.0
+    foam_range.inputs["From Max"].default_value = 1.0  # 1.0m foam margin width
+    foam_range.inputs["To Min"].default_value = 1.0    # 100% foam at contact edge
+    foam_range.inputs["To Max"].default_value = 0.0    # 0% foam in open water
+    links.new(lp.outputs["Ray Length"], foam_range.inputs["Value"])
+
     voro_foam = nodes.new(type="ShaderNodeTexVoronoi")
-    voro_foam.location = (0, 300)
+    voro_foam.location = (-150, -150)
     voro_foam.inputs["Scale"].default_value = 16.0
 
     noise_foam = nodes.new(type="ShaderNodeTexNoise")
-    noise_foam.location = (0, 100)
+    noise_foam.location = (-150, -300)
     noise_foam.inputs["Scale"].default_value = 7.0
     noise_foam.inputs["Detail"].default_value = 4.0
 
     mult_foam = nodes.new(type="ShaderNodeMath")
-    mult_foam.location = (250, 200)
+    mult_foam.location = (100, -200)
     mult_foam.operation = "MULTIPLY"
     links.new(voro_foam.outputs["Distance"], mult_foam.inputs[0])
     links.new(noise_foam.outputs["Fac"], mult_foam.inputs[1])
 
-    ramp_foam = nodes.new(type="ShaderNodeValToRGB")
-    ramp_foam.location = (450, 200)
-    ramp_foam.color_ramp.elements[0].position = 0.55
-    ramp_foam.color_ramp.elements[1].position = 0.85
-    links.new(mult_foam.outputs["Value"], ramp_foam.inputs["Fac"])
+    foam_contact_mask = nodes.new(type="ShaderNodeMath")
+    foam_contact_mask.location = (300, -50)
+    foam_contact_mask.operation = "MULTIPLY"
+    links.new(foam_range.outputs["Result"], foam_contact_mask.inputs[0])
+    links.new(mult_foam.outputs["Value"], foam_contact_mask.inputs[1])
 
     mix_water_foam = nodes.new(type="ShaderNodeMix")
-    mix_water_foam.location = (650, 200)
+    mix_water_foam.location = (550, 100)
     mix_water_foam.data_type = "RGBA"
     f_wf, a_wf, b_wf, out_wf = _get_mix_rgba_sockets(mix_water_foam)
 
     if config.water_contact_foam:
-        links.new(ramp_foam.outputs["Color"], f_wf)
+        links.new(foam_contact_mask.outputs["Value"], f_wf)
     else:
         f_wf.default_value = 0.0
 
-    a_wf.default_value = water_base_color
+    links.new(out_d, a_wf)
     b_wf.default_value = (0.95, 0.98, 1.0, 1.0)  # Pure white bubbly contact foam
     links.new(out_wf, bsdf.inputs["Base Color"])
 
-    # Procedural Wave Normal Bump Perturbation
+    # 3. Procedural Wave Normal Bump Perturbation with Flow Vector Distortion
+    tex_coord = nodes.new(type="ShaderNodeTexCoord")
+    tex_coord.location = (-150, -450)
+
+    mapping_flow = nodes.new(type="ShaderNodeMapping")
+    mapping_flow.location = (50, -450)
+    mapping_flow.vector_type = "POINT"
+    # Elongate ripples along primary flow axis (2.4x) for realistic directional flow distortion
+    mapping_flow.inputs["Scale"].default_value = (2.4, 1.0, 1.0)
+    links.new(tex_coord.outputs["Generated"], mapping_flow.inputs["Vector"])
+
     tex_wave1 = nodes.new(type="ShaderNodeTexNoise")
-    tex_wave1.location = (250, -100)
+    tex_wave1.location = (250, -350)
     tex_wave1.inputs["Scale"].default_value = 2.8
     tex_wave1.inputs["Detail"].default_value = 4.0
     tex_wave1.inputs["Roughness"].default_value = 0.45
+    links.new(mapping_flow.outputs["Vector"], tex_wave1.inputs["Vector"])
 
     tex_wave2 = nodes.new(type="ShaderNodeTexVoronoi")
-    tex_wave2.location = (250, -300)
+    tex_wave2.location = (250, -550)
     tex_wave2.inputs["Scale"].default_value = 3.6
+    links.new(mapping_flow.outputs["Vector"], tex_wave2.inputs["Vector"])
 
     mix_waves = nodes.new(type="ShaderNodeMix")
-    mix_waves.location = (450, -150)
+    mix_waves.location = (450, -450)
     mix_waves.data_type = "FLOAT"
     f_w, a_w, b_w, out_w = _get_mix_float_sockets(mix_waves)
     f_w.default_value = 0.4
@@ -401,11 +594,23 @@ def create_water_shader(config: ShaderConfig) -> bpy.types.Material:
     links.new(tex_wave2.outputs["Distance"], b_w)
 
     bump_water = nodes.new(type="ShaderNodeBump")
-    bump_water.location = (650, -150)
+    bump_water.location = (700, -450)
     bump_water.inputs["Strength"].default_value = 0.06
     bump_water.inputs["Distance"].default_value = 0.15
     links.new(out_w, bump_water.inputs["Height"])
     links.new(bump_water.outputs["Normal"], bsdf.inputs["Normal"])
+
+    # Water Optical Surface Parameters
+    bsdf.inputs["Roughness"].default_value = max(0.02, config.water_roughness)
+    bsdf.inputs["IOR"].default_value = 1.333
+
+    if "Transmission Weight" in bsdf.inputs:
+        bsdf.inputs["Transmission Weight"].default_value = 0.90
+    elif "Transmission" in bsdf.inputs:
+        bsdf.inputs["Transmission"].default_value = 0.90
+
+    if "Alpha" in bsdf.inputs:
+        bsdf.inputs["Alpha"].default_value = 0.92
 
     # Viewport & EEVEE Next Real-Time Transparency
     if hasattr(mat, "surface_render_method"):
@@ -420,8 +625,93 @@ def create_water_shader(config: ShaderConfig) -> bpy.types.Material:
     return mat
 
 
+def create_cavern_mineral_shader(
+    glow_color: tuple = (0.1, 0.9, 0.4),
+    emission_strength: float = 4.5,
+) -> bpy.types.Material:
+    """
+    Constructs a photorealistic PBR phosphorescent mineral crystal druse material
+    (fluorite/calcite druse) for cavern crystal clusters:
+    - Faceted crystalline cleavage planes via Voronoi cell bump
+    - Low surface roughness (0.18) with fluorite IOR (1.434)
+    - Crystalline transmission weight (0.45) for translucency
+    - Bioluminescent emission (color + strength 4.5)
+    - Full Blender 4.5.4 LTS BLENDER_EEVEE_NEXT compatibility
+    """
+    if not HAS_BPY or bpy is None:
+        return None
+
+    mat_name = "MAT_Cavern_Mineral_Emissive"
+    mat = bpy.data.materials.get(mat_name)
+    if mat is None:
+        mat = bpy.data.materials.new(name=mat_name)
+
+    mat.use_nodes = True
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    nodes.clear()
+
+    node_out = nodes.new(type="ShaderNodeOutputMaterial")
+    node_out.location = (800, 0)
+
+    bsdf = nodes.new(type="ShaderNodeBsdfPrincipled")
+    bsdf.location = (500, 0)
+    links.new(bsdf.outputs["BSDF"], node_out.inputs["Surface"])
+
+    # Base crystalline druse color
+    bsdf.inputs["Base Color"].default_value = (
+        glow_color[0] * 0.25,
+        glow_color[1] * 0.35,
+        glow_color[2] * 0.30,
+        1.0,
+    )
+    bsdf.inputs["Roughness"].default_value = 0.18
+    bsdf.inputs["IOR"].default_value = 1.434  # Fluorite refractive index
+
+    if "Transmission Weight" in bsdf.inputs:
+        bsdf.inputs["Transmission Weight"].default_value = 0.45
+    elif "Transmission" in bsdf.inputs:
+        bsdf.inputs["Transmission"].default_value = 0.45
+
+    # Bioluminescent emission
+    if "Emission Color" in bsdf.inputs:
+        bsdf.inputs["Emission Color"].default_value = (glow_color[0], glow_color[1], glow_color[2], 1.0)
+        bsdf.inputs["Emission Strength"].default_value = float(emission_strength)
+    elif "Emission" in bsdf.inputs:
+        bsdf.inputs["Emission"].default_value = (glow_color[0], glow_color[1], glow_color[2], 1.0)
+
+    # Faceted Crystal Cleavage Bump
+    geom = nodes.new(type="ShaderNodeNewGeometry")
+    geom.location = (0, -200)
+
+    voro_facet = nodes.new(type="ShaderNodeTexVoronoi")
+    voro_facet.location = (200, -200)
+    voro_facet.inputs["Scale"].default_value = 14.0
+    links.new(geom.outputs["Position"], voro_facet.inputs["Vector"])
+
+    bump_facet = nodes.new(type="ShaderNodeBump")
+    bump_facet.location = (350, -200)
+    bump_facet.inputs["Strength"].default_value = 0.35
+    bump_facet.inputs["Distance"].default_value = 0.10
+    links.new(voro_facet.outputs["Distance"], bump_facet.inputs["Height"])
+    links.new(bump_facet.outputs["Normal"], bsdf.inputs["Normal"])
+
+    # Transparency configuration for EEVEE Next
+    if hasattr(mat, "surface_render_method"):
+        mat.surface_render_method = "BLENDED"
+    if hasattr(mat, "blend_method"):
+        mat.blend_method = "BLEND"
+    if hasattr(mat, "use_screen_refraction"):
+        mat.use_screen_refraction = True
+
+    return mat
+
+
 def create_bioluminescent_fungus_shader(glow_color: tuple = (0.1, 0.9, 0.4)) -> bpy.types.Material:
     """Constructs glowing fungal shader with emission and SSS."""
+    if not HAS_BPY or bpy is None:
+        return None
+
     mat_name = "MAT_TerraForge_Cave_Fungi_Glow"
     mat = bpy.data.materials.get(mat_name)
     if mat is None:
@@ -446,4 +736,5 @@ def create_bioluminescent_fungus_shader(glow_color: tuple = (0.1, 0.9, 0.4)) -> 
         bsdf.inputs["Emission Strength"].default_value = 4.5
 
     return mat
+
 

@@ -45,18 +45,42 @@ def export_production_glb(output_path: str) -> str:
     proto_col = bpy.data.collections.get("TerraForge_Prototypes")
     if proto_col:
         proto_col.hide_render = True
+        proto_col.hide_viewport = True
 
     # Use standard glTF exporter
     bpy.ops.export_scene.gltf(
         filepath=str(out_file),
         export_format="GLB",
         use_selection=False,
+        use_visible=True,
+        use_renderable=True,
         export_apply=True,
         export_draco_mesh_compression_enable=False,
         export_image_format="AUTO",
         export_lights=True,
         export_cameras=True,
+        export_animations=False,
     )
+    # Post-export atomic manifest synchronization
+    try:
+        from terra_forge.core.manifest import sync_manifest_model_asset
+        candidates = [
+            out_file.parent.parent / "map_manifest.json",
+            out_file.parent / "map_manifest.json",
+            ROOT_DIR.parent / "01_AI_Agents" / "Genesis_Zero" / "assets" / "map_manifest.json",
+        ]
+        for manifest_cand in candidates:
+            if manifest_cand.is_file():
+                sync_manifest_model_asset(
+                    manifest_path=manifest_cand,
+                    glb_path=out_file,
+                    format="gltf-binary",
+                    glb_rel_path="assets/blender_map/" + out_file.name,
+                )
+                break
+    except Exception:
+        pass
+
     return str(out_file)
 
 
@@ -64,7 +88,19 @@ def export_blend_file(output_path: str) -> str:
     """Saves the master production .blend file."""
     out_file = _resolve_path(output_path)
     out_file.parent.mkdir(parents=True, exist_ok=True)
-    bpy.ops.wm.save_as_mainfile(filepath=str(out_file))
+    if bpy is not None:
+        try:
+            bpy.context.preferences.filepaths.save_version = 0
+        except Exception:
+            pass
+        bpy.ops.wm.save_as_mainfile(filepath=str(out_file))
+        # Ensure no .blend1 backup file is left behind
+        blend1_file = out_file.with_name(out_file.name + "1")
+        if blend1_file.exists():
+            try:
+                blend1_file.unlink()
+            except Exception:
+                pass
     return str(out_file)
 
 

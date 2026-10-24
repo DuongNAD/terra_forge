@@ -26,7 +26,11 @@ from terra_forge.core.diorama_slab import DioramaSlabBuilder
 from terra_forge.blender.mesh_builder import build_diorama_terrain_object
 from terra_forge.blender.water_builder import build_water_bodies
 from terra_forge.blender.cave_builder import build_karst_cavern
-from terra_forge.blender.asset_fetcher import resolve_prototype_object
+from terra_forge.blender.asset_fetcher import (
+    resolve_prototype_object,
+    instantiate_embedded_crags,
+    scatter_riverbed_boulders,
+)
 from terra_forge.blender.geonodes import apply_biome_scatter_modifier
 from terra_forge.blender.exporter import (
     export_production_glb,
@@ -35,7 +39,105 @@ from terra_forge.blender.exporter import (
 )
 from terra_forge.inspector.cameras import setup_inspection_cameras
 from terra_forge.inspector.validator import QualityValidator
-from terra_forge.inspector.vision_rig import render_inspection_snapshots, build_2x2_vision_grid
+from terra_forge.inspector.vision_rig import (
+    render_inspection_snapshots,
+    build_2x2_vision_grid,
+    render_visual_acceptance_renders,
+)
+
+
+def verify_strict_abiotic_scene(terrain_obj: Any, config: MapConfig) -> dict:
+    """
+    Strict 100% Abiotic Verification (Feature 17):
+    - When `config.biomes` is empty:
+      * Exactly 0 Geometry Nodes scatter modifiers are linked.
+      * `TerraForge_Prototypes` contains 0 objects.
+      * All scene objects match whitelisted prefixes: ("Diorama_", "Water_", "Cave_", "CAM_", "Sun_").
+      * Strictly 0% flora, 0% fauna, 0% architecture across all meshes, manifests, presets, and scene objects.
+    """
+    import bpy
+
+    results = {
+        "passed": True,
+        "is_abiotic": True,
+        "errors": [],
+        "metrics": {
+            "biomes_count": len(config.biomes) if config.biomes else 0,
+            "scatter_modifiers": 0,
+            "prototype_objects": 0,
+            "scene_objects_count": len(bpy.data.objects),
+            "whitelisted_objects_count": 0,
+            "biological_objects_count": 0,
+        },
+    }
+
+    if config.biomes:
+        results["is_abiotic"] = False
+        return results
+
+    # 1. Exactly 0 Geometry Nodes scatter modifiers linked
+    gn_mods = [m for obj in bpy.data.objects for m in obj.modifiers if m.type == 'NODES']
+    results["metrics"]["scatter_modifiers"] = len(gn_mods)
+    if len(gn_mods) > 0:
+        results["passed"] = False
+        results["errors"].append(
+            f"Strict abiotic violation: found {len(gn_mods)} Geometry Nodes modifier(s) linked in scene: {[m.name for m in gn_mods]}"
+        )
+
+    # 2. TerraForge_Prototypes contains 0 objects
+    proto_col = bpy.data.collections.get("TerraForge_Prototypes")
+    proto_count = len(proto_col.objects) if proto_col else 0
+    results["metrics"]["prototype_objects"] = proto_count
+    if proto_count > 0:
+        results["passed"] = False
+        results["errors"].append(
+            f"Strict abiotic violation: 'TerraForge_Prototypes' contains {proto_count} object(s): {[o.name for o in proto_col.objects]}"
+        )
+
+    # 3. All scene objects match whitelisted prefixes: ("Diorama_", "Water_", "Cave_", "CAM_", "Sun_")
+    whitelisted_prefixes = ("Diorama_", "Water_", "Cave_", "CAM_", "Sun_")
+    non_whitelisted = []
+    for obj in bpy.data.objects:
+        if not obj.name.startswith(whitelisted_prefixes):
+            non_whitelisted.append(obj.name)
+        else:
+            results["metrics"]["whitelisted_objects_count"] += 1
+
+    if non_whitelisted:
+        results["passed"] = False
+        results["errors"].append(
+            f"Strict abiotic prefix violation: objects {non_whitelisted} do not match whitelisted prefixes {whitelisted_prefixes}"
+        )
+
+    # 4. Strictly 0% flora, 0% fauna, 0% architecture across all meshes and scene objects
+    forbidden_tokens = [
+        "tree", "pine", "palm", "oak", "shrub", "bush", "grass", "flower",
+        "fern", "mushroom", "moss", "log", "stump", "leaf", "flora",
+        "fauna", "animal", "creature", "deer", "bird", "fish", "coral",
+        "house", "building", "ruin", "bridge", "fence", "wall", "plank",
+        "cabin", "temple", "tower", "castle", "road", "pavement"
+    ]
+    detected_forbidden = []
+    for obj in bpy.data.objects:
+        obj_lower = obj.name.lower()
+        for tok in forbidden_tokens:
+            if tok in obj_lower:
+                detected_forbidden.append(f"Object:{obj.name}(token:{tok})")
+
+    for mesh in bpy.data.meshes:
+        mesh_lower = mesh.name.lower()
+        for tok in forbidden_tokens:
+            if tok in mesh_lower:
+                detected_forbidden.append(f"Mesh:{mesh.name}(token:{tok})")
+
+    results["metrics"]["biological_objects_count"] = len(detected_forbidden)
+    if detected_forbidden:
+        results["passed"] = False
+        results["errors"].append(
+            f"Strict 0% flora/fauna/architecture violation: detected forbidden items: {detected_forbidden}"
+        )
+
+    return results
 
 
 def run_pipeline(config_dict_or_path: dict | str, render_preview: bool = False, preview_dir: str = "previews") -> dict:
@@ -76,6 +178,9 @@ def run_pipeline(config_dict_or_path: dict | str, render_preview: bool = False, 
             peak.ridge_angle_deg,
         )
 
+    # Apply geological features (strata folds, tectonic scarps, terraces, coastal profile)
+    hf.apply_geological_features(config)
+
     # Carve Lake Basin & Form Natural Retaining Berm
     hf.carve_lake_basin(
         config.hydrology.lake_center[0],
@@ -84,6 +189,11 @@ def run_pipeline(config_dict_or_path: dict | str, render_preview: bool = False, 
         config.hydrology.lake_level,
         config.hydrology.lake_depth,
     )
+
+    # Stage A Anti-Staircasing: Pre-erosion edge-preserving Bilateral filter
+    # Melts transition steps and contour terracing while preserving aretes and scarps
+    hf.apply_bilateral_filter(spatial_sigma=2.5, range_sigma=1.8, radius=3, iterations=1)
+
     t_topo_1 = time.perf_counter()
     print(f"[TerraForge] Base topography synthesized in {t_topo_1 - t_topo_0:.3f}s")
 
@@ -100,7 +210,13 @@ def run_pipeline(config_dict_or_path: dict | str, render_preview: bool = False, 
     t_hyd_0 = time.perf_counter()
     hydro = HydrologyEngine(hf, config.hydrology)
     hydro.carve_river_channel()
+    hydro.rasterize_water_depth()
     dist_water = hydro.compute_water_distance_field()
+
+    # Stage B Anti-Staircasing: Post-erosion Taubin/Laplacian relaxation
+    # Polishes out micro-rills and scree discretization steps without shrinkage
+    hf.apply_laplacian_smoothing(iterations=1, lambda_rate=0.20, anti_shrink=True)
+
     t_hyd_1 = time.perf_counter()
     print(f"[TerraForge] Hydrology & river carved in {t_hyd_1 - t_hyd_0:.3f}s")
 
@@ -117,22 +233,38 @@ def run_pipeline(config_dict_or_path: dict | str, render_preview: bool = False, 
     print(f"[TerraForge] {len(water_objs)} water bodies built.")
 
     # Step 6: Build Karst Cavern & Speleothems
-    cave_objs = build_karst_cavern(config.cavern, config.shaders)
+    cave_objs = build_karst_cavern(config.cavern, config.shaders, hf=hf, terrain_obj=terrain_obj)
     print(f"[TerraForge] Karst cavern system built ({len(cave_objs)} elements).")
 
-    # Step 7: Parametric Geometry Nodes Scattering
+    # Step 7: Parametric Scattering / Abiotic Asset Population
     t_bio_0 = time.perf_counter()
-    water_cutoff = max(float(config.hydrology.lake_level), float(config.hydrology.sea_level))
-    for biome_cfg in config.biomes:
-        proto_obj = resolve_prototype_object(biome_cfg.prototype)
-        apply_biome_scatter_modifier(terrain_obj, proto_obj, biome_cfg, water_level=water_cutoff)
-    t_bio_1 = time.perf_counter()
-    print(f"[TerraForge] {len(config.biomes)} parametric scatter biomes applied in {t_bio_1 - t_bio_0:.3f}s")
+    if config.biomes:
+        water_cutoff = max(float(config.hydrology.lake_level), float(config.hydrology.sea_level))
+        for biome_cfg in config.biomes:
+            proto_obj = resolve_prototype_object(biome_cfg.prototype)
+            apply_biome_scatter_modifier(terrain_obj, proto_obj, biome_cfg, water_level=water_cutoff)
+        t_bio_1 = time.perf_counter()
+        print(f"[TerraForge] {len(config.biomes)} parametric scatter biomes applied in {t_bio_1 - t_bio_0:.3f}s")
+    else:
+        print("[TerraForge] 0 biomes configured — pure abiotic geosphere (0% flora, 0% fauna scattered).")
+        crag_objs = instantiate_embedded_crags(terrain_obj, hf, config, count=6, embed_depth=-0.8)
+        boulder_objs = scatter_riverbed_boulders(terrain_obj, hf, config.hydrology, config, count=12, embed_ratio=0.25)
+        print(f"[TerraForge] Abiotic assets populated: {len(crag_objs)} crags, {len(boulder_objs)} river boulders.")
 
     # Step 8: Setup Inspection Cameras & Validate Invariants
     setup_inspection_cameras(config=config, hf=hf)
     validator = QualityValidator(config, hf)
     validation_results = validator.validate_all()
+
+    # Step 8b: Strict 100% Abiotic Verification (Feature 17)
+    abiotic_results = verify_strict_abiotic_scene(terrain_obj, config)
+    validation_results["abiotic_verification"] = abiotic_results
+    if not abiotic_results["passed"]:
+        validation_results["passed"] = False
+        validation_results["errors"].extend(abiotic_results["errors"])
+    if abiotic_results["is_abiotic"]:
+        print(f"[TerraForge] Abiotic Verification: Passed={abiotic_results['passed']}, Errors={len(abiotic_results['errors'])}")
+
     print(f"[TerraForge] Validation: Passed={validation_results['passed']}, Errors={len(validation_results['errors'])}, Warnings={len(validation_results['warnings'])}")
 
     # Step 9: Production Exports
@@ -152,14 +284,20 @@ def run_pipeline(config_dict_or_path: dict | str, render_preview: bool = False, 
         export_outputs["heightmap_json"] = p
         print(f"[TerraForge] Exported simulation heightmap JSON: {p}")
 
-    # Step 10: Render Previews if requested
+    # Step 10: Render Previews & Acceptance Renders if requested
     preview_grid_path = None
+    acceptance_renders = {}
     if render_preview:
         print("[TerraForge] Rendering multi-angle inspection snapshots...")
         snap_paths = render_inspection_snapshots(preview_dir, config=config, hf=hf)
         grid_file = os.path.join(preview_dir, f"{config.name}_preview_2x2.png")
         preview_grid_path = build_2x2_vision_grid(snap_paths, grid_file)
         print(f"[TerraForge] Built 2x2 vision grid preview: {preview_grid_path}")
+
+        # Render 4 official acceptance renders directly to assets/blender_map/
+        blender_map_dir = r"e:/Project/01_AI_Agents/Genesis_Zero/assets/blender_map"
+        acceptance_renders = render_visual_acceptance_renders(blender_map_dir, config=config, hf=hf)
+        print(f"[TerraForge] Rendered {len(acceptance_renders)} acceptance views into {blender_map_dir}")
 
     total_time = time.perf_counter() - t0
     print(f"[TerraForge] Pipeline successfully completed in {total_time:.2f}s!")

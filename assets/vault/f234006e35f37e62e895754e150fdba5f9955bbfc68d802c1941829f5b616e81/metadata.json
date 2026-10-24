@@ -1,0 +1,352 @@
+{
+  "asset_id": "f234006e35f37e62e895754e150fdba5f9955bbfc68d802c1941829f5b616e81",
+  "prompt": "geometric columnar basalt cluster, volcanic columnar jointing, polygonal prismatic hexagonal pentagonal rock pillars, dark tholeiitic basalt texture, fractured igneous cooling joints, stepped terrace escarpment, sterile geology, cinematic lighting, untouched primordial abiotic wilderness",
+  "seed": 42,
+  "params": {},
+  "flora_type": null,
+  "abiotic_type": 2,
+  "biological_metadata": null,
+  "abiotic_metadata": {
+    "geological_name": "Columnar Basalt Cluster",
+    "common_name": "Prismatic Basalt Columns",
+    "category": "igneous",
+    "abiotic_type": 2,
+    "solid": true,
+    "typical_height": 6.0,
+    "typical_radius": 2.5,
+    "rock_type": "tholeiitic_basalt"
+  },
+  "dimensions_meters": {
+    "height": 6.0
+  },
+  "lod_stats": {
+    "lod0": 160,
+    "lod1": 160,
+    "lod2": 160
+  },
+  "collision_primitives": {
+    "cylinder": {
+      "radius": 2.265,
+      "height": 6.0,
+      "center": [
+        0.0,
+        3.0,
+        0.0
+      ]
+    },
+    "aabb": {
+      "min_vec": [
+        -2.3009,
+        0.0,
+        -2.3763
+      ],
+      "max_vec": [
+        2.3009,
+        6.0,
+        2.3763
+      ],
+      "size": [
+        4.6018,
+        6.0,
+        4.7526
+      ],
+      "center": [
+        0.0,
+        3.0,
+        0.0
+      ]
+    },
+    "convex_hull": {
+      "vertex_count": 20,
+      "simplex_count": 36,
+      "vertices": [
+        [
+          -0.6051,
+          6.0,
+          0.6344
+        ],
+        [
+          -0.2326,
+          6.0,
+          -0.772
+        ],
+        [
+          0.7991,
+          6.0,
+          0.2538
+        ],
+        [
+          -1.7161,
+          0.0,
+          1.5816
+        ],
+        [
+          -1.7161,
+          5.28,
+          1.5816
+        ],
+        [
+          -2.1593,
+          0.0,
+          0.1552
+        ],
+        [
+          -2.3009,
+          0.0,
+          -0.7222
+        ],
+        [
+          -2.3009,
+          4.68,
+          -0.7222
+        ],
+        [
+          -0.6846,
+          0.0,
+          -2.3763
+        ],
+        [
+          -1.0385,
+          5.52,
+          -1.0402
+        ],
+        [
+          -0.6846,
+          5.52,
+          -2.3763
+        ],
+        [
+          0.2956,
+          5.52,
+          -1.4018
+        ],
+        [
+          1.2134,
+          0.0,
+          -1.858
+        ],
+        [
+          1.8086,
+          4.92,
+          -1.2662
+        ],
+        [
+          2.3009,
+          0.0,
+          0.7083
+        ],
+        [
+          2.3009,
+          4.44,
+          0.7083
+        ],
+        [
+          -0.187,
+          0.0,
+          2.1881
+        ],
+        [
+          0.5235,
+          0.0,
+          2.3763
+        ],
+        [
+          -0.187,
+          5.1,
+          2.1881
+        ],
+        [
+          1.0417,
+          5.1,
+          1.8551
+        ]
+      ],
+      "simplices": [
+        [
+          18,
+          10,
+          3
+        ],
+        [
+          5,
+          47,
+          3
+        ],
+        [
+          45,
+          47,
+          44
+        ],
+        [
+          45,
+          10,
+          3
+        ],
+        [
+          45,
+          47,
+          3
+        ],
+        [
+          22,
+          29,
+          25
+        ],
+        [
+          24,
+          18,
+          25
+        ],
+        [
+          24,
+          25,
+          3
+        ],
+        [
+          24,
+          18,
+          3
+        ],
+        [
+          14,
+          7,
+          10
+        ],
+        [
+          14,
+          18,
+          10
+        ],
+        [
+          14,
+          18,
+          15
+        ],
+        [
+          4,
+          25,
+          3
+        ],
+        [
+          4,
+          5,
+          3
+        ],
+        [
+          4,
+          5,
+          25
+        ],
+        [
+          32,
+          29,
+          25
+        ],
+        [
+          32,
+          29,
+          36
+        ],
+        [
+          41,
+          45,
+          44
+        ],
+        [
+          26,
+          5,
+          25
+        ],
+        [
+          26,
+          32,
+          25
+        ],
+        [
+          26,
+          32,
+          5
+        ],
+        [
+          39,
+          5,
+          47
+        ],
+        [
+          39,
+          32,
+          5
+        ],
+        [
+          39,
+          32,
+          36
+        ],
+        [
+          39,
+          44,
+          36
+        ],
+        [
+          39,
+          47,
+          44
+        ],
+        [
+          22,
+          18,
+          15
+        ],
+        [
+          22,
+          18,
+          25
+        ],
+        [
+          41,
+          44,
+          36
+        ],
+        [
+          41,
+          22,
+          15
+        ],
+        [
+          41,
+          29,
+          36
+        ],
+        [
+          41,
+          14,
+          15
+        ],
+        [
+          41,
+          22,
+          29
+        ],
+        [
+          41,
+          14,
+          7
+        ],
+        [
+          41,
+          7,
+          10
+        ],
+        [
+          41,
+          45,
+          10
+        ]
+      ],
+      "volume": 80.7072,
+      "area": 103.3291
+    }
+  },
+  "created_at": "2026-09-10T05:49:05.427185+00:00",
+  "source": "procedural_normalizer"
+}

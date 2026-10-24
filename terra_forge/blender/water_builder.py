@@ -8,8 +8,15 @@ from __future__ import annotations
 import math
 from typing import Any
 
-import bmesh
-import bpy
+try:
+    import bmesh
+    import bpy
+    HAS_BPY = True
+except ImportError:
+    bmesh = None
+    bpy = None
+    HAS_BPY = False
+
 import numpy as np
 
 from terra_forge.blender.shaders import create_water_shader
@@ -21,13 +28,15 @@ def build_water_bodies(
     shader_cfg: ShaderConfig,
     diorama_bounds: Any = None,
     hf: Any = None,
-) -> list[bpy.types.Object]:
+) -> list[Any]:
     """
     Constructs all continuous hydrological water meshes:
     1. Watertight Central Lake body with retaining freeboard perimeter collar.
     2. Dynamic Marine Bay / Coastal plane with downward diorama skirt walls.
     3. Dynamic River Meander Ribbon respecting arbitrary river_stages per preset.
     """
+    if not HAS_BPY or bpy is None or bmesh is None:
+        return []
     water_mat = create_water_shader(shader_cfg)
     created_objects = []
 
@@ -242,12 +251,24 @@ def build_water_bodies(
                 right_verts.append(vr)
 
             bm_riv.verts.ensure_lookup_table()
+            uv_lay = bm_riv.loops.layers.uv.verify()
             for i in range(steps - 1):
                 v0 = left_verts[i]
                 v1 = right_verts[i]
                 v2 = right_verts[i + 1]
                 v3 = left_verts[i + 1]
-                bm_riv.faces.new([v0, v1, v2, v3])
+                face = bm_riv.faces.new([v0, v1, v2, v3])
+                u0 = i / float(max(1, steps - 1))
+                u1 = (i + 1) / float(max(1, steps - 1))
+                for loop in face.loops:
+                    if loop.vert == v0:
+                        loop[uv_lay].uv = (u0, 0.0)
+                    elif loop.vert == v1:
+                        loop[uv_lay].uv = (u0, 1.0)
+                    elif loop.vert == v2:
+                        loop[uv_lay].uv = (u1, 1.0)
+                    elif loop.vert == v3:
+                        loop[uv_lay].uv = (u1, 0.0)
 
         # Dynamically build ribbons for all non-submerged river stages
         for i, stage in enumerate(stages):

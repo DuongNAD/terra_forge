@@ -1,0 +1,261 @@
+{
+  "asset_id": "68066f76b4b837f47dae7c2d3a542b06ccf168a9c7841d66c14c0ee83e747f6c",
+  "prompt": "natural rocky karst arch cavern entrance, rugged eroded limestone rock opening, subterranean cave portal, ancient weathered geological archway, sterile abiotic karst stone, rough porous limestone cliff cavity, cinematic lighting, untouched primordial abiotic wilderness",
+  "seed": 42,
+  "params": {},
+  "flora_type": null,
+  "abiotic_type": 9,
+  "biological_metadata": null,
+  "abiotic_metadata": {
+    "geological_name": "Karst Limestone Cavern Portal",
+    "common_name": "Karst Arch Cavern Entrance",
+    "category": "portal",
+    "abiotic_type": 9,
+    "solid": true,
+    "typical_height": 7.0,
+    "typical_radius": 4.5,
+    "rock_type": "porous_karst_limestone"
+  },
+  "dimensions_meters": {
+    "height": 7.0
+  },
+  "lod_stats": {
+    "lod0": 3948,
+    "lod1": 2000,
+    "lod2": 300
+  },
+  "collision_primitives": {
+    "cylinder": {
+      "radius": 3.7314,
+      "height": 7.0,
+      "center": [
+        0.0,
+        3.5,
+        0.0
+      ]
+    },
+    "aabb": {
+      "min_vec": [
+        -4.5887,
+        0.0,
+        -1.7107
+      ],
+      "max_vec": [
+        4.5887,
+        7.0,
+        1.7107
+      ],
+      "size": [
+        9.1774,
+        7.0,
+        3.4215
+      ],
+      "center": [
+        0.0,
+        3.5,
+        0.0
+      ]
+    },
+    "convex_hull": {
+      "vertex_count": 14,
+      "simplex_count": 24,
+      "vertices": [
+        [
+          2.0002,
+          0.0,
+          1.7107
+        ],
+        [
+          2.0002,
+          0.0,
+          -1.7107
+        ],
+        [
+          2.9985,
+          0.9876,
+          -1.4333
+        ],
+        [
+          4.5887,
+          0.9854,
+          1.7107
+        ],
+        [
+          0.4955,
+          7.0,
+          1.7107
+        ],
+        [
+          -1.7967,
+          4.5707,
+          -1.7107
+        ],
+        [
+          -4.5887,
+          0.9854,
+          1.7107
+        ],
+        [
+          -3.1658,
+          0.0,
+          -1.2484
+        ],
+        [
+          -2.0002,
+          0.0,
+          0.971
+        ],
+        [
+          2.4404,
+          3.9621,
+          -1.5258
+        ],
+        [
+          -3.665,
+          2.1792,
+          1.6183
+        ],
+        [
+          -3.5541,
+          1.137,
+          -1.3408
+        ],
+        [
+          0.3446,
+          4.9542,
+          -1.6183
+        ],
+        [
+          3.5577,
+          0.0,
+          -0.5086
+        ]
+      ],
+      "simplices": [
+        [
+          34,
+          15,
+          19
+        ],
+        [
+          34,
+          16,
+          19
+        ],
+        [
+          34,
+          16,
+          15
+        ],
+        [
+          35,
+          16,
+          19
+        ],
+        [
+          35,
+          16,
+          2
+        ],
+        [
+          20,
+          35,
+          19
+        ],
+        [
+          20,
+          35,
+          2
+        ],
+        [
+          42,
+          0,
+          11
+        ],
+        [
+          42,
+          8,
+          11
+        ],
+        [
+          42,
+          8,
+          2
+        ],
+        [
+          26,
+          15,
+          11
+        ],
+        [
+          26,
+          8,
+          11
+        ],
+        [
+          26,
+          8,
+          2
+        ],
+        [
+          22,
+          0,
+          19
+        ],
+        [
+          22,
+          20,
+          19
+        ],
+        [
+          41,
+          16,
+          15
+        ],
+        [
+          41,
+          26,
+          15
+        ],
+        [
+          41,
+          16,
+          2
+        ],
+        [
+          41,
+          26,
+          2
+        ],
+        [
+          0,
+          15,
+          11
+        ],
+        [
+          0,
+          15,
+          19
+        ],
+        [
+          22,
+          42,
+          2
+        ],
+        [
+          22,
+          20,
+          2
+        ],
+        [
+          22,
+          42,
+          0
+        ]
+      ],
+      "volume": 104.6137,
+      "area": 132.9347
+    }
+  },
+  "source": "high_fidelity_normalizer"
+}
